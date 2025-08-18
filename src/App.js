@@ -4,10 +4,11 @@ import HomePage from "./HomePage";
 import React from "react";
 import Test from "./Test"
 import TestCars from "./TestCars";
+import CarSelector from "./components/CarSelector";
 function App() {
   return (
     <div className="App">
-      <TestCars/>
+      <CarSelector/>
     </div>
   );
 }
