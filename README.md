@@ -1,3 +1,17 @@
+- Car Compare feature 100% working objasnet:
+
+Povlekov data od CarsApp API i napraviv Node.js server koj gi povrzuva API-to i react frontendot. 
+(Ne e mozno toa samo preku frontend radi CORS blocking)
+Potoa serverov go deploynav za free na Vercel vo forma serverless function, 
+Toj bez cors gi otvara portite od cars apito za sekoj od nadvor samo so frontend da gi pristapi.
+Edinstveno potrebno e da go updatirame JWT tokenot za Car API ednash nedelno. (moze avtomatski da se naprai msm)
+
+Ovaa e najdobar nacin da se integrira Car API besplatno, a Firebase da raboti.
+Ima X free api calls mesecno,taman si se
+
+
+
+
 - Modeli:
 	User (name, surname, username, email, password, (threads*, comments*, cars*,) points)
 	Car (user*, make, model, image, reg_plate, logs*)
