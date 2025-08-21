@@ -39,7 +39,8 @@ const useUsers = () => {
     //         })
     // },[fetchUsers])
     const findUserById = useCallback((id) => {
-        return state.users.find(user => user.id === id) || null;
+        //console.log(id)
+        return state.users.find(user => user.id === id) || {} ;
     }, [state.users]);
 
     const onDelete = useCallback((id)=>{

@@ -62,11 +62,7 @@ const useCars = () => {
     },[fetchCars])
 
     const findById = useCallback((id)=>{
-        carsRepository.findById(id)
-            .then((response)=>{
-                console.log("Car found by Id")
-                fetchCars()
-            })
+        return state.cars.find(car => car.id === id);
     },[fetchCars])
 
     useEffect(() => {

@@ -2,8 +2,6 @@ import {addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc} from "fi
 import {db} from "../config/firebase";
 
 
-
-//TODO: Find By User Id
 const carsRepository = {
 
     findAll: async () => {
@@ -29,7 +27,7 @@ const carsRepository = {
 
     updateCar: async (car, carId) => {
         const docRef = await doc(db, "cars", carId)
-        await updateDoc(docRef, carId)
+        await updateDoc(docRef, car)
     },
 
     deleteCar: async(carId) => {
