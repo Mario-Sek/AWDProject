@@ -1,87 +1,27 @@
-import {useCallback, useState, useEffect} from "react";
-
+import { useCallback, useState, useEffect } from "react";
 import userRepository from "../repository/userRepository";
 
-const initialState = {
-    "users": [],
-    "loading": true // za da ispratam na ui
-}
+const initialState = { users: [], loading: true };
 
 const useUsers = () => {
-
-    const [state, setState] = useState(initialState)
+    const [state, setState] = useState(initialState);
 
     const fetchUsers = useCallback(() => {
-        setState(initialState) //ako preth bilo popolneto
-
+        setState(initialState);
         userRepository.findAll()
-            .then((response)=>{
-                setState({
-                    "users":response,
-                    "loading":false
-                })
-                //console.log(response.data)
-            })
-            .catch((error)=>{
-                console.log(error)
-            })
-    },[])
+            .then(users => setState({ users, loading: false }))
+            .catch(console.log);
+    }, []);
 
-    // const findUserById = useCallback((id)=>{
-    //     userRepository.findById(id)
-    //         .then((data)=>{
-    //             console.log(data)
-    //             fetchUsers()
-    //             return data
-    //         })
-    //         .catch((error)=>{
-    //             console.log(error)
-    //         })
-    // },[fetchUsers])
-    const findUserById = useCallback((id) => {
-        //console.log(id)
-        return state.users.find(user => user.id === id) || {} ;
-    }, [state.users]);
-
-    const onDelete = useCallback((id)=>{
-        userRepository.deleteUser(id)
-            .then(()=>{
-                console.log(`User deleted with ID: ${id}`)
-                fetchUsers()
-            })
-            .catch((error)=>{
-                console.log(error)
-            })
-    },[fetchUsers])
-
-    const onUpdate = useCallback((id,data)=>{
-        userRepository.updateUser(id,data)
-            .then(()=>{
-                console.log(`User with ID: ${id} updated`)
-            })
-            .catch((error)=>{
-                console.log(error)
-            })
-    },[fetchUsers])
-
-    const onAdd = useCallback((data)=>{
-        userRepository.addUser(data)
-            .then(()=>{
-                console.log("User Added")
-                fetchUsers()
-            })
-            .catch((error)=>{
-                console.log(error)
-            })
-    },[fetchUsers])
-
-    useEffect(() => {
-        fetchUsers()
+    const onUpdate = useCallback((docId, data) => {
+        userRepository.updateUser(docId, data)
+            .then(() => fetchUsers())
+            .catch(console.log);
     }, [fetchUsers]);
 
+    useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-    return {...state,onAdd:onAdd,onDelete:onDelete,onUpdate:onUpdate,findUserById:findUserById};
-}
+    return { ...state, onUpdate };
+};
 
-
-export default useUsers
+export default useUsers;
