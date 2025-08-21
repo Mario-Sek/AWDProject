@@ -5,6 +5,7 @@ import TestUsers from "./ui/testPages/TestUsers";
 import TestThreads from "./ui/testPages/TestThreads";
 import TestCars from "./ui/testPages/TestCars";
 import { useAuth } from "./hooks/useAuth";
+import CarSelector from "./ui/carSpecs/CarSelector";
 
 function App() {
     const { user, loading } = useAuth();
@@ -25,6 +26,14 @@ function App() {
 
                 {/* Optional: redirect / to /forum if logged in */}
                 <Route path="/" element={<Navigate to={user ? "/forum" : "/login"} />} />
+
+                {/* car specs route */}
+                <Route
+                    path="/carspecs"
+                    element={user ? <CarSelector /> : <Navigate to="/login" />}
+                />
+
+
             </Routes>
         </Router>
     );

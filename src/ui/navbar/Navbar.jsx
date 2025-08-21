@@ -16,6 +16,7 @@ export default function Navbar() {
             <div style={styles.leftLinks}>
                 <Link to="/user" style={styles.link}>User</Link>
                 <Link to="/threads" style={styles.link}>Threads</Link>
+                <Link to="/carspecs" style={styles.link}>Car Specs</Link>
             </div>
 
             <div style={styles.rightSection}>
@@ -28,6 +29,7 @@ export default function Navbar() {
                     <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>Login</Link>
                 )}
             </div>
+
         </nav>
     );
 }
