@@ -13,23 +13,32 @@ export default function Navbar() {
 
     return (
         <nav style={styles.navbar}>
+            {/* Left Section: Navigation Links */}
             <div style={styles.leftLinks}>
                 <Link to="/user" style={styles.link}>User</Link>
                 <Link to="/threads" style={styles.link}>Threads</Link>
                 <Link to="/carspecs" style={styles.link}>Car Specs</Link>
             </div>
 
+            {/* Right Section: Auth Links or User Info */}
             <div style={styles.rightSection}>
                 {user ? (
                     <>
                         <span style={styles.userGreeting}>Hi, {user.email}</span>
-                        <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
+                        <button
+                            style={styles.logoutButton}
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </button>
                     </>
                 ) : (
-                    <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>Login</Link>
+                    <>
+                        <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>Login</Link>
+                        <Link to="/register" style={{ ...styles.link, ...styles.signupLink }}>Sign Up</Link>
+                    </>
                 )}
             </div>
-
         </nav>
     );
 }
@@ -63,7 +72,14 @@ const styles = {
         borderRadius: "6px",
         backgroundColor: "#fff",
         color: "#4f46e5",
-        textDecoration: "none",
+        transition: "all 0.2s",
+    },
+    signupLink: {
+        fontWeight: 600,
+        padding: "0.4rem 1rem",
+        borderRadius: "6px",
+        backgroundColor: "#10b981", // green
+        color: "#fff",
         transition: "all 0.2s",
     },
     rightSection: {

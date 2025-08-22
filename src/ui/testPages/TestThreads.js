@@ -23,7 +23,7 @@ const TestThreads = () => {
 
     const handleSubmit = () => {
         if (!formData.title.trim() || !formData.description.trim()) return;
-        onAdd({ ...formData, createdAt: new Date() });
+        onAdd({ ...formData, createdAt: new Date(), userId: findUserById?.uid || null });
         setFormData(initialFormData);
     };
 
@@ -38,6 +38,7 @@ const TestThreads = () => {
         deleteButton: { padding: "0.3rem 0.6rem", borderRadius: "6px", border: "none", backgroundColor: "#dc3545", color: "#fff", cursor: "pointer" },
         threadImage: { maxWidth: "100%", borderRadius: "6px", marginTop: "0.5rem" },
         metadata: { fontSize: "0.8rem", color: "#555", marginTop: "0.5rem" },
+        userName: { fontWeight: "bold", color: "#333" },
     };
 
     return (
@@ -74,20 +75,27 @@ const TestThreads = () => {
             </div>
 
             <ul style={{ listStyle: "none", padding: 0 }}>
-                {threads.map((thread) => (
-                    <li key={thread.id} style={styles.threadCard}>
-                        <div style={styles.threadHeader}>
-                            <h3>{thread.title}</h3>
-                            <button style={styles.deleteButton} onClick={() => onDelete(thread.id)}>
-                                Delete
-                            </button>
-                        </div>
-                        <p>{thread.description}</p>
-                        {thread.image && <img src={thread.image} alt="thread" style={styles.threadImage} />}
-                        <div style={styles.metadata}>Posted: {thread.createdAt.toDate().toLocaleString()}</div>
-                        <TestComments threadId={thread.id} findUserById={findUserById} />
-                    </li>
-                ))}
+                {threads.map((thread) => {
+                    const threadUser = findUserById(thread.userId);
+                    return (
+                        <li key={thread.id} style={styles.threadCard}>
+                            <div style={styles.threadHeader}>
+                                <h3>{thread.title}</h3>
+                                <button style={styles.deleteButton} onClick={() => onDelete(thread.id)}>
+                                    Delete
+                                </button>
+                            </div>
+                            <p>{thread.description}</p>
+                            {thread.image && <img src={thread.image} alt="thread" style={styles.threadImage} />}
+                            <div style={styles.metadata}>
+                                Posted by <span style={styles.userName}>{threadUser?.username || threadUser?.email || "Unknown"}</span> on {thread.createdAt.toDate().toLocaleString()}
+                            </div>
+
+                            {/* Pass findUserById to comments to render actual commenters */}
+                            <TestComments threadId={thread.id} findUserById={findUserById} />
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

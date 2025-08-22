@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useComments from "../../hooks/useComments";
 import TestReplies from "./TestReplies";
+import { useAuth } from "../../hooks/useAuth";
 
 const initialFormData = {
     description: "",
@@ -10,6 +11,7 @@ const initialFormData = {
 };
 
 const TestComments = ({ threadId, findUserById }) => {
+    const { user } = useAuth(); // current logged-in user
     const { comments, onAdd, onDelete } = useComments(threadId);
     const [formData, setFormData] = useState(initialFormData);
 
@@ -19,16 +21,16 @@ const TestComments = ({ threadId, findUserById }) => {
     };
 
     const handleSubmit = () => {
-        if (!formData.description.trim()) return;
+        if (!formData.description.trim() || !user) return;
+
         onAdd({
             ...formData,
             createdAt: new Date(),
-            userId: "Pk4sB7ioqzMF7XxhMfjh", // test user
+            userId: user.uid, // actual logged-in user
         });
         setFormData(initialFormData);
     };
 
-    // Styles
     const styles = {
         container: { maxWidth: "700px", margin: "1rem auto", fontFamily: "Arial, sans-serif" },
         form: { display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" },
@@ -45,14 +47,15 @@ const TestComments = ({ threadId, findUserById }) => {
     return (
         <div style={styles.container}>
             <h4>Comments</h4>
+
             <div style={styles.form}>
-        <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Add a comment..."
-            style={styles.textarea}
-        />
+                <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Add a comment..."
+                    style={styles.textarea}
+                />
                 <input
                     type="text"
                     name="image"
@@ -61,26 +64,27 @@ const TestComments = ({ threadId, findUserById }) => {
                     placeholder="Image URL (optional)"
                     style={styles.input}
                 />
-                <button style={styles.button} onClick={handleSubmit}>Post Comment</button>
+                <button style={styles.button} onClick={handleSubmit}>
+                    Post Comment
+                </button>
             </div>
 
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {comments.map((comment) => {
-                    const user = findUserById(comment.userId);
+                    const commentUser = findUserById(comment.userId);
                     return (
                         <li key={comment.id} style={styles.commentCard}>
-                            <div style={styles.username}>{user?.username || "Unknown User"}</div>
+                            <div style={styles.username}>{commentUser?.username || commentUser?.email || "Unknown User"}</div>
                             <p>{comment.description}</p>
                             {comment.image && <img src={comment.image} alt="comment" style={{ maxWidth: "100%", borderRadius: "6px" }} />}
                             <div style={styles.metadata}>Posted: {comment.createdAt.toDate().toLocaleString()}</div>
                             <div style={styles.buttonsContainer}>
-                                <button
-                                    style={styles.deleteButton}
-                                    onClick={() => onDelete(comment.id)}
-                                >
+                                <button style={styles.deleteButton} onClick={() => onDelete(comment.id)}>
                                     Delete
                                 </button>
                             </div>
+
+                            {/* Replies */}
                             <TestReplies threadId={threadId} commentId={comment.id} findUserById={findUserById} />
                         </li>
                     );

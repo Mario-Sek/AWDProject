@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import useReplies from "../../hooks/useReplies";
-import useUsers from "../../hooks/useUsers";
+import { useAuth } from "../../hooks/useAuth";
 
 const initialFormData = { description: "", downvotes: 0, upvotes: 0, image: null };
 
-const TestReplies = ({ threadId, commentId }) => {
+const TestReplies = ({ threadId, commentId, findUserById }) => {
+    const { user } = useAuth(); // current logged-in user
     const { replies, onAdd, onDelete } = useReplies(threadId, commentId);
-    const { findUserById } = useUsers();
 
     const [formData, setFormData] = useState(initialFormData);
 
@@ -16,18 +16,18 @@ const TestReplies = ({ threadId, commentId }) => {
     };
 
     const handleSubmit = () => {
-        if (!formData.description.trim()) return;
+        if (!formData.description.trim() || !user) return;
+
         onAdd({
             ...formData,
             createdAt: new Date(),
-            userId: "Pk4sB7ioqzMF7XxhMfjh", // test user
+            userId: user.uid, // actual logged-in user
         });
         setFormData(initialFormData);
     };
 
     const repliesWithUsers = replies.map((r) => ({ ...r, user: findUserById(r.userId) }));
 
-    // Styles
     const styles = {
         container: { marginLeft: "1rem", maxWidth: "600px", fontFamily: "Arial, sans-serif" },
         form: { display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" },
@@ -44,13 +44,13 @@ const TestReplies = ({ threadId, commentId }) => {
         <div style={styles.container}>
             <h4>Add a reply</h4>
             <div style={styles.form}>
-        <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Write your reply..."
-            style={styles.textarea}
-        />
+                <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Write your reply..."
+                    style={styles.textarea}
+                />
                 <input
                     type="text"
                     name="image"
@@ -65,7 +65,7 @@ const TestReplies = ({ threadId, commentId }) => {
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {repliesWithUsers.map((r) => (
                     <li key={r.id} style={styles.replyCard}>
-                        <div style={styles.username}>{r.user?.username || "Unknown User"}</div>
+                        <div style={styles.username}>{r.user?.username || r.user?.email || "Unknown User"}</div>
                         <p style={styles.replyText}>{r.description}</p>
                         {r.image && <img src={r.image} alt="reply" style={{ maxWidth: "100%", borderRadius: "6px" }} />}
                         <div style={styles.metadata}>
