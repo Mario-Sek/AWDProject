@@ -6,6 +6,8 @@ import TestThreads from "./ui/testPages/TestThreads";
 import { useAuth } from "./hooks/useAuth";
 import CarSelector from "./ui/carSpecs/CarSelector";
 import Register from "./ui/registerForm/Register";
+import CarDetailsPage from "./ui/carDetailsPage/CarDetailsPage";
+import CarEditPage from "./ui/carDetailsPage/CarEditPage"; // <-- create this page
 
 function App() {
     const { user, loading } = useAuth();
@@ -15,18 +17,21 @@ function App() {
     return (
         <Router>
             <Navbar />
+
             <Routes>
                 {/* Protected routes */}
                 <Route path="/user" element={user ? <TestUsers /> : <Navigate to="/login" />} />
                 <Route path="/threads" element={user ? <TestThreads /> : <Navigate to="/login" />} />
                 <Route path="/carspecs" element={user ? <CarSelector /> : <Navigate to="/login" />} />
+                <Route path="/cars/:id" element={user ? <CarDetailsPage /> : <Navigate to="/login" />} />
+                <Route path="/cars/:id/edit" element={user ? <CarEditPage /> : <Navigate to="/login" />} /> {/* <-- Added */}
 
                 {/* Auth routes */}
                 <Route path="/login" element={!user ? <AuthForm mode="login" /> : <Navigate to="/user" />} />
                 <Route path="/register" element={!user ? <Register mode="register" /> : <Navigate to="/user" />} />
 
                 {/* Default route */}
-                <Route path="/" element={<Navigate to={user ? "/user" : "/login"} />} />
+                <Route path="*" element={<Navigate to={user ? "/user" : "/login"} />} /> {/* Catch-all */}
             </Routes>
         </Router>
     );

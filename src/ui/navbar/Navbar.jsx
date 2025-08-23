@@ -7,17 +7,27 @@ export default function Navbar() {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        await auth.signOut();
-        navigate("/login");
+        try {
+            await auth.signOut();
+            navigate("/login");
+        } catch (err) {
+            console.error("Logout failed:", err);
+        }
     };
 
     return (
         <nav style={styles.navbar}>
             {/* Left Section: Navigation Links */}
             <div style={styles.leftLinks}>
-                <Link to="/user" style={styles.link}>User</Link>
-                <Link to="/threads" style={styles.link}>Threads</Link>
-                <Link to="/carspecs" style={styles.link}>Car Specs</Link>
+                {user ? (
+                    <>
+                        <Link to="/user" style={styles.link}>Dashboard</Link>
+                        <Link to="/threads" style={styles.link}>Threads</Link>
+                        <Link to="/carspecs" style={styles.link}>Car Specs</Link>
+                    </>
+                ) : (
+                    <Link to="/" style={styles.link}>Home</Link>
+                )}
             </div>
 
             {/* Right Section: Auth Links or User Info */}
@@ -34,8 +44,12 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
-                        <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>Login</Link>
-                        <Link to="/register" style={{ ...styles.link, ...styles.signupLink }}>Sign Up</Link>
+                        <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>
+                            Login
+                        </Link>
+                        <Link to="/register" style={{ ...styles.link, ...styles.signupLink }}>
+                            Sign Up
+                        </Link>
                     </>
                 )}
             </div>
@@ -58,7 +72,8 @@ const styles = {
     },
     leftLinks: {
         display: "flex",
-        gap: "1.5rem"
+        gap: "1.5rem",
+        alignItems: "center",
     },
     link: {
         color: "#fff",
@@ -78,14 +93,14 @@ const styles = {
         fontWeight: 600,
         padding: "0.4rem 1rem",
         borderRadius: "6px",
-        backgroundColor: "#10b981", // green
+        backgroundColor: "#10b981",
         color: "#fff",
         transition: "all 0.2s",
     },
     rightSection: {
         display: "flex",
         alignItems: "center",
-        gap: "1rem"
+        gap: "1rem",
     },
     userGreeting: {
         fontWeight: 500,
@@ -99,5 +114,5 @@ const styles = {
         fontWeight: 500,
         cursor: "pointer",
         transition: "background 0.2s",
-    }
+    },
 };
