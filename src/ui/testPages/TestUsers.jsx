@@ -372,54 +372,30 @@ const TestUsers = () => {
             <h3>My Cars</h3>
             <div style={styles.carGrid}>
                 {userCars.map(car => {
-                    // Get make name from API
                     const makeName = makes.find(m => String(m.id) === String(car.make))?.name || car.make;
 
                     return (
                         <div
                             key={car.id}
                             style={{
-                                position: "relative",
-                                background: "#ffffff",
-                                borderRadius: "12px",
-                                boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
+                                background: "#fff",
+                                borderRadius: "16px",
+                                boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
                                 overflow: "hidden",
                                 cursor: "pointer",
-                                transition: "transform 0.2s, box-shadow 0.2s",
+                                transition: "transform 0.3s, box-shadow 0.3s",
                             }}
                             onClick={() => navigate(`/cars/${car.id}`)}
                             onMouseEnter={e => {
-                                e.currentTarget.style.transform = "translateY(-4px)";
-                                e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.15)";
+                                e.currentTarget.style.transform = "translateY(-6px)";
+                                e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.15)";
                             }}
                             onMouseLeave={e => {
                                 e.currentTarget.style.transform = "translateY(0)";
-                                e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.1)";
+                                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)";
                             }}
                         >
-                            {/* Edit Button */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/cars/${car.id}/edit`);
-                                }}
-                                style={{
-                                    position: "absolute",
-                                    top: "10px",
-                                    right: "10px",
-                                    backgroundColor: "#1d4ed8",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    padding: "0.3rem 0.6rem",
-                                    fontSize: "0.8rem",
-                                    cursor: "pointer",
-                                    zIndex: 2,
-                                }}
-                            >
-                                Edit
-                            </button>
-
+                            {/* Car Image */}
                             {car.image ? (
                                 <img
                                     src={car.image}
@@ -434,8 +410,8 @@ const TestUsers = () => {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        backgroundColor: "#f3f3f3",
-                                        color: "#888",
+                                        backgroundColor: "#f0f0f0",
+                                        color: "#aaa",
                                         fontSize: "1.2rem",
                                         fontWeight: "bold",
                                     }}
@@ -444,15 +420,62 @@ const TestUsers = () => {
                                 </div>
                             )}
 
-                            <div style={{padding: "1rem"}}>
-                                <div style={{fontSize: "1.2rem", fontWeight: "600", marginBottom: "0.3rem"}}>
+                            {/* Card Body */}
+                            <div style={{padding: "1rem", display: "flex", flexDirection: "column", gap: "0.3rem"}}>
+                                <div style={{fontSize: "1.2rem", fontWeight: "600"}}>
                                     {makeName} {car.model} ({car.year})
                                 </div>
-                                <div style={{color: "#555", fontSize: "0.95rem", marginBottom: "0.2rem"}}>
-                                    Plate: {car.reg_plate}
-                                </div>
-                                <div style={{color: "#555", fontSize: "0.95rem"}}>
-                                    Fuel: {car.fuel || "N/A"}
+                                <div style={{color: "#555", fontSize: "0.95rem"}}>Plate: {car.reg_plate}</div>
+                                <div style={{color: "#555", fontSize: "0.95rem"}}>Fuel: {car.fuel || "N/A"}</div>
+
+                                {/* Buttons */}
+                                <div style={{display: "flex", gap: "0.5rem", marginTop: "0.8rem"}}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/cars/${car.id}/edit`);
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            padding: "0.4rem 0",
+                                            borderRadius: "8px",
+                                            border: "none",
+                                            backgroundColor: "#1d4ed8",
+                                            color: "#fff",
+                                            cursor: "pointer",
+                                            fontSize: "0.85rem",
+                                            fontWeight: "600",
+                                            transition: "background 0.2s",
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2563eb"}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1d4ed8"}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm("Are you sure you want to delete this car?")) {
+                                                onDelete(car.id);
+                                            }
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            padding: "0.4rem 0",
+                                            borderRadius: "8px",
+                                            border: "none",
+                                            backgroundColor: "#ef4444",
+                                            color: "#fff",
+                                            cursor: "pointer",
+                                            fontSize: "0.85rem",
+                                            fontWeight: "600",
+                                            transition: "background 0.2s",
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f87171"}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#ef4444"}
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>
