@@ -2,14 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import useCars from "../../hooks/useCars";
 import {
-    LineChart,
     Line,
+    LineChart,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     Legend,
     ResponsiveContainer,
+    ReferenceLine,
 } from "recharts";
 
 const conditionColors = {
@@ -202,32 +203,63 @@ const CarDetailsPage = () => {
                 </div>
             </div>
 
-            {/* Chart */}
-            {chartData.length > 0 && (
-                <div style={{ marginBottom: "2rem", background: "#fff", padding: "1rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-                    <h3 style={{ marginBottom: "1rem" }}>Fuel Consumption Over Time</h3>
-                    <ResponsiveContainer width="100%" height={320}>
-                        <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" />
-                            <YAxis unit=" L/100km" />
-                            <Tooltip />
-                            <Legend />
-                            {conditions.map((cond) => (
-                                <Line
-                                    key={cond}
-                                    type="monotone"
-                                    dataKey={cond}
-                                    stroke={conditionColors[cond]}
-                                    dot={{ r: 3 }}
-                                    strokeWidth={2}
-                                    connectNulls
-                                />
-                            ))}
-                        </LineChart>
-                    </ResponsiveContainer>
+            <div style={{ marginBottom: "2rem", padding: "1rem" }}>
+                <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>Fuel Consumption Over Time</h3>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem" }}>
+                    {conditions.map((cond) => (
+                        <div
+                            key={cond}
+                            style={{
+                                background: "#fff",
+                                borderRadius: "12px",
+                                padding: "1rem",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                            }}
+                        >
+                            <h4 style={{ marginBottom: "0.5rem" }}>{cond}</h4>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                                    <XAxis
+                                        dataKey="date"
+                                        tick={{ fontSize: 12, fill: "#333" }}
+                                        tickFormatter={(d) =>
+                                            new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                                        }
+                                    />
+                                    <YAxis tick={{ fontSize: 12, fill: "#333" }} unit=" L/100km" />
+                                    <Tooltip
+                                        contentStyle={{ background: "#fff", color: "#000", borderRadius: 6 }}
+                                        formatter={(val) => val.toFixed(2) + " L/100km"}
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey={cond}
+                                        stroke={conditionColors[cond]} // make sure it's visible on white
+                                        strokeWidth={3}
+                                        dot={{ r: 4 }}
+                                        activeDot={{ r: 6 }}
+                                        connectNulls
+                                        isAnimationActive={true}
+                                    />
+                                    <ReferenceLine
+                                        y={averageConsumption}
+                                        stroke="#ff5722"
+                                        strokeDasharray="4 4"
+                                        label={{
+                                            value: `Avg: ${averageConsumption.toFixed(2)}`,
+                                            position: "insideTopRight",
+                                            fill: "#333",
+                                        }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ))}
                 </div>
-            )}
+            </div>
+
 
             {/* Logs Table */}
             <div style={{ background: "#fff", padding: "1rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
