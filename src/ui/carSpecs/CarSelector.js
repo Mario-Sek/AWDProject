@@ -38,7 +38,6 @@ const CarSelector = () => {
     const [loadingResults, setLoadingResults] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
 
-    // Fetch all makes only once
     useEffect(() => {
         const loadMakes = async () => {
             try {
@@ -49,7 +48,6 @@ const CarSelector = () => {
                 else if (Array.isArray(data.data)) setMakes(data.data);
                 else setMakes([]);
             } catch (err) {
-                console.error(err);
                 setMakes([]);
             } finally {
                 setLoadingMakes(false);
@@ -130,10 +128,22 @@ const CarSelector = () => {
         if (field === "trim") { setEngines([]); setBodies([]); fetchDetails(value, setEngines, setBodies); }
     };
 
-    const handleEnter = () => {
+    const handleEnter = async () => {
         setShowResults(true);
         setLoadingResults(true);
-        setTimeout(() => setLoadingResults(false), 400);
+
+        const handleCar = async (car, trims, setEngines, setBodies) => {
+            if (car.trim) await fetchDetails(car.trim, setEngines, setBodies);
+            else if (trims.length) await fetchDetails(trims[0].id, setEngines, setBodies);
+            else { setEngines([]); setBodies([]); }
+        };
+
+        await Promise.all([
+            handleCar(car1, trims1, setEngines1, setBodies1),
+            compareMode ? handleCar(car2, trims2, setEngines2, setBodies2) : null
+        ]);
+
+        setLoadingResults(false);
     };
 
     const DropdownColumn = ({ car, carNum, models, submodels, trims, align }) => (
@@ -190,8 +200,6 @@ const CarSelector = () => {
     return (
         <div className="car-selector-container">
             <h2 className="car-selector-title">Car Specs</h2>
-
-            {/* Compare toggle above */}
             <div className="compare-toggle-container">
                 <span>Compare</span>
                 <label className="switch">
@@ -205,7 +213,6 @@ const CarSelector = () => {
                 {compareMode && <DropdownColumn car={car2} carNum={2} models={models2} submodels={submodels2} trims={trims2} align="right" />}
             </div>
 
-            {/* Enter button below */}
             <div className="car-selector-actions">
                 <button className="car-selector-button" onClick={handleEnter}>
                     {loadingResults ? "Loading..." : "Enter"}
