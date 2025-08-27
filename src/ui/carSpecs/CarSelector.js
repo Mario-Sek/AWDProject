@@ -12,7 +12,7 @@ const BODY_FIELDS = [
     "ground_clearance","cargo_capacity","curb_weight"
 ];
 
-const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
+const VERCEL_BASE_URL = "https://carapi2-0.vercel.app";
 
 const CarSelector = () => {
     const [makes, setMakes] = useState([]);
