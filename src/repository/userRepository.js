@@ -1,48 +1,49 @@
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, increment, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 const COLLECTION = "user";
 
 const userRepository = {
     findAll: async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, COLLECTION));
-            return querySnapshot.docs.map(doc => ({
-                docId: doc.id,
-                ...doc.data(),
-            }));
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            throw new Error("Failed to fetch users.");
-        }
+        const querySnapshot = await getDocs(collection(db, COLLECTION));
+        return querySnapshot.docs.map(doc => ({
+            docId: doc.id,
+            ...doc.data(),
+        }));
     },
 
     updateUser: async (docId, data) => {
-        try {
-            const userRef = doc(db, COLLECTION, docId);
-            await updateDoc(userRef, data);
-        } catch (error) {
-            console.error(`Error updating user ${docId}:`, error);
-            throw new Error("Failed to update user.");
-        }
+        const userRef = doc(db, COLLECTION, docId);
+        await updateDoc(userRef, data);
     },
 
     addUser: async (user) => {
-        try {
-            const docRef = await addDoc(collection(db, COLLECTION), user);
-            return docRef.id;
-        } catch (error) {
-            console.error("Error adding user:", error);
-            throw new Error("Failed to add user.");
-        }
+        const docRef = await addDoc(collection(db, COLLECTION), user);
+        return docRef.id;
     },
 
     deleteUser: async (docId) => {
+        await deleteDoc(doc(db, COLLECTION, docId));
+    },
+
+    incrementPoints: async (docId, value = 1) => {
+        const userRef = doc(db, COLLECTION, docId);
+        await updateDoc(userRef, { points: increment(value) });
+    },
+
+    // NEW: Increment points by UID (Firebase Auth)
+    incrementPointsByUid: async (uid, value = 1) => {
         try {
-            await deleteDoc(doc(db, COLLECTION, docId));
+            const q = query(collection(db, COLLECTION), where("uid", "==", uid));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) throw new Error(`No user found with uid: ${uid}`);
+
+            const userDocId = snapshot.docs[0].id;
+            await updateDoc(doc(db, COLLECTION, userDocId), { points: increment(value) });
         } catch (error) {
-            console.error(`Error deleting user ${docId}:`, error);
-            throw new Error("Failed to delete user.");
+            console.error(`Error incrementing points for user ${uid}:`, error);
+            throw new Error("Failed to increment points.");
         }
     }
 };

@@ -7,12 +7,13 @@ const initialFormData = {
     description: "",
     downvotes: 0,
     upvotes: 0,
+    votedBy: {},
     image: null,
 };
 
 const TestComments = ({ threadId, findUserById }) => {
-    const { user } = useAuth(); // current logged-in user
-    const { comments, onAdd, onDelete } = useComments(threadId);
+    const { user } = useAuth(); // logged-in user
+    const { comments, onAdd, onDelete, onUpdate } = useComments(threadId);
     const [formData, setFormData] = useState(initialFormData);
 
     const handleChange = (event) => {
@@ -26,9 +27,38 @@ const TestComments = ({ threadId, findUserById }) => {
         onAdd({
             ...formData,
             createdAt: new Date(),
-            userId: user.uid, // actual logged-in user
+            userId: user.uid,
+            upvotes: 0,
+            downvotes: 0,
+            votedBy: {},
         });
         setFormData(initialFormData);
+    };
+
+    const handleVote = (comment, type) => {
+        if (!user) return; // prevent anonymous voting
+
+        const currentVote = comment.votedBy?.[user.uid] || null;
+        let upvotes = comment.upvotes;
+        let downvotes = comment.downvotes;
+        const votedBy = { ...(comment.votedBy || {}) };
+
+        if (currentVote === type) {
+            // Remove same vote
+            if (type === "upvote") upvotes -= 1;
+            if (type === "downvote") downvotes -= 1;
+            delete votedBy[user.uid];
+        } else {
+            // Switch vote
+            if (currentVote === "upvote") upvotes -= 1;
+            if (currentVote === "downvote") downvotes -= 1;
+            if (type === "upvote") upvotes += 1;
+            if (type === "downvote") downvotes += 1;
+            votedBy[user.uid] = type;
+        }
+
+        const updatedComment = { ...comment, upvotes, downvotes, votedBy };
+        onUpdate(comment.id, updatedComment);
     };
 
     const styles = {
@@ -41,6 +71,9 @@ const TestComments = ({ threadId, findUserById }) => {
         username: { fontWeight: "bold", color: "#333" },
         metadata: { fontSize: "0.8rem", color: "#555" },
         buttonsContainer: { marginTop: "0.5rem", display: "flex", gap: "0.5rem" },
+        voteButton: { padding: "0.3rem 0.6rem", borderRadius: "6px", border: "none", cursor: "pointer", marginRight: "0.5rem" },
+        upvote: { backgroundColor: "#10b981", color: "#fff" },
+        downvote: { backgroundColor: "#ef4444", color: "#fff" },
         deleteButton: { padding: "0.3rem 0.6rem", borderRadius: "6px", border: "none", backgroundColor: "#dc3545", color: "#fff", cursor: "pointer" },
     };
 
@@ -48,14 +81,15 @@ const TestComments = ({ threadId, findUserById }) => {
         <div style={styles.container}>
             <h4>Comments</h4>
 
+            {/* Comment Form */}
             <div style={styles.form}>
-                <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Add a comment..."
-                    style={styles.textarea}
-                />
+        <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Add a comment..."
+            style={styles.textarea}
+        />
                 <input
                     type="text"
                     name="image"
@@ -69,16 +103,35 @@ const TestComments = ({ threadId, findUserById }) => {
                 </button>
             </div>
 
+            {/* Comments List */}
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {comments.map((comment) => {
                     const commentUser = findUserById(comment.userId);
+                    const currentVote = comment.votedBy?.[user?.uid] || null;
+
                     return (
                         <li key={comment.id} style={styles.commentCard}>
                             <div style={styles.username}>{commentUser?.username || commentUser?.email || "Unknown User"}</div>
                             <p>{comment.description}</p>
                             {comment.image && <img src={comment.image} alt="comment" style={{ maxWidth: "100%", borderRadius: "6px" }} />}
-                            <div style={styles.metadata}>Posted: {comment.createdAt.toDate().toLocaleString()}</div>
+                            <div style={styles.metadata}>Posted: {comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleString() : new Date(comment.createdAt).toLocaleString()}</div>
+
+                            {/* Voting buttons */}
                             <div style={styles.buttonsContainer}>
+                                <button
+                                    disabled={!user}
+                                    style={{ ...styles.voteButton, ...styles.upvote, opacity: currentVote === "upvote" ? 1 : 0.6 }}
+                                    onClick={() => handleVote(comment, "upvote")}
+                                >
+                                    👍 {comment.upvotes}
+                                </button>
+                                <button
+                                    disabled={!user}
+                                    style={{ ...styles.voteButton, ...styles.downvote, opacity: currentVote === "downvote" ? 1 : 0.6 }}
+                                    onClick={() => handleVote(comment, "downvote")}
+                                >
+                                    👎 {comment.downvotes}
+                                </button>
                                 <button style={styles.deleteButton} onClick={() => onDelete(comment.id)}>
                                     Delete
                                 </button>

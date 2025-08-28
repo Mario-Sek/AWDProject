@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import repliesRepository from "../repository/subcollections/repliesRepository";
+import userRepository from "../repository/userRepository";
 
 const useReplies = (threadId, commentId) => {
     const [state, setState] = useState({ replies: [], loading: true });
@@ -15,20 +16,24 @@ const useReplies = (threadId, commentId) => {
         return () => unsubscribe && unsubscribe();
     }, [fetchReplies]);
 
-    const onAdd = useCallback(
-        (data) => repliesRepository.addReply(threadId, commentId, data),
-        [threadId, commentId]
-    );
+    const onAdd = useCallback(async (data) => {
+        try {
+            await repliesRepository.addReply(threadId, commentId, data);
+            if (data.userId) await userRepository.incrementPointsByUid(data.userId, 1);
+        } catch (error) {
+            console.error(error);
+        }
+    }, [threadId, commentId]);
 
-    const onUpdate = useCallback(
-        (replyId, data) => repliesRepository.updateReply(threadId, commentId, replyId, data),
-        [threadId, commentId]
-    );
+    const onUpdate = useCallback((replyId, data) => {
+        repliesRepository.updateReply(threadId, commentId, replyId, data)
+            .catch(console.log);
+    }, [threadId, commentId]);
 
-    const onDelete = useCallback(
-        (replyId) => repliesRepository.deleteReply(threadId, commentId, replyId),
-        [threadId, commentId]
-    );
+    const onDelete = useCallback((replyId) => {
+        repliesRepository.deleteReply(threadId, commentId, replyId)
+            .catch(console.log);
+    }, [threadId, commentId]);
 
     return { ...state, onAdd, onUpdate, onDelete };
 };
