@@ -44,7 +44,7 @@ const TestThreads = () => {
     };
 
     const handleVote = (thread, type) => {
-        if (!currentUser) return; // prevent anonymous voting
+        if (!currentUser) return;
 
         const currentVote = thread.votedBy?.[currentUser] || null;
         let upvotes = thread.upvotes;
@@ -52,12 +52,10 @@ const TestThreads = () => {
         const votedBy = { ...(thread.votedBy || {}) };
 
         if (currentVote === type) {
-            // remove the same vote
             if (type === "upvote") upvotes -= 1;
             if (type === "downvote") downvotes -= 1;
             delete votedBy[currentUser];
         } else {
-            // switch vote
             if (currentVote === "upvote") upvotes -= 1;
             if (currentVote === "downvote") downvotes -= 1;
             if (type === "upvote") upvotes += 1;
@@ -96,7 +94,6 @@ const TestThreads = () => {
         <div style={styles.container}>
             <h2>Threads</h2>
 
-            {/* Thread Form */}
             <div style={styles.form}>
                 <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Title" style={styles.input} />
                 <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" style={styles.textarea} />
@@ -104,7 +101,6 @@ const TestThreads = () => {
                 <button style={styles.button} onClick={handleSubmit}>Post Thread</button>
             </div>
 
-            {/* Threads List */}
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {threads.map((thread) => {
                     const threadUser = findUserById(thread.userId);
@@ -124,7 +120,6 @@ const TestThreads = () => {
                                 Posted by <span style={styles.userName}>{threadUser?.username || threadUser?.email || "Unknown"}</span> on {thread.createdAt.toDate ? thread.createdAt.toDate().toLocaleString() : new Date(thread.createdAt).toLocaleString()}
                             </div>
 
-                            {/* Upvote / Downvote */}
                             <div style={{ marginTop: "0.5rem" }}>
                                 <button
                                     disabled={!currentUser}
@@ -142,7 +137,6 @@ const TestThreads = () => {
                                 </button>
                             </div>
 
-                            {/* Comments */}
                             <TestComments threadId={thread.id} findUserById={findUserById} />
                         </li>
                     );

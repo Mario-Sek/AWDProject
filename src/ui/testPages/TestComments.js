@@ -36,7 +36,7 @@ const TestComments = ({ threadId, findUserById }) => {
     };
 
     const handleVote = (comment, type) => {
-        if (!user) return; // prevent anonymous voting
+        if (!user) return;
 
         const currentVote = comment.votedBy?.[user.uid] || null;
         let upvotes = comment.upvotes;
@@ -44,12 +44,10 @@ const TestComments = ({ threadId, findUserById }) => {
         const votedBy = { ...(comment.votedBy || {}) };
 
         if (currentVote === type) {
-            // Remove same vote
             if (type === "upvote") upvotes -= 1;
             if (type === "downvote") downvotes -= 1;
             delete votedBy[user.uid];
         } else {
-            // Switch vote
             if (currentVote === "upvote") upvotes -= 1;
             if (currentVote === "downvote") downvotes -= 1;
             if (type === "upvote") upvotes += 1;
@@ -81,7 +79,6 @@ const TestComments = ({ threadId, findUserById }) => {
         <div style={styles.container}>
             <h4>Comments</h4>
 
-            {/* Comment Form */}
             <div style={styles.form}>
         <textarea
             name="description"
@@ -103,7 +100,6 @@ const TestComments = ({ threadId, findUserById }) => {
                 </button>
             </div>
 
-            {/* Comments List */}
             <ul style={{ listStyle: "none", padding: 0 }}>
                 {comments.map((comment) => {
                     const commentUser = findUserById(comment.userId);
@@ -116,7 +112,6 @@ const TestComments = ({ threadId, findUserById }) => {
                             {comment.image && <img src={comment.image} alt="comment" style={{ maxWidth: "100%", borderRadius: "6px" }} />}
                             <div style={styles.metadata}>Posted: {comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleString() : new Date(comment.createdAt).toLocaleString()}</div>
 
-                            {/* Voting buttons */}
                             <div style={styles.buttonsContainer}>
                                 <button
                                     disabled={!user}
@@ -137,7 +132,6 @@ const TestComments = ({ threadId, findUserById }) => {
                                 </button>
                             </div>
 
-                            {/* Replies */}
                             <TestReplies threadId={threadId} commentId={comment.id} findUserById={findUserById} />
                         </li>
                     );

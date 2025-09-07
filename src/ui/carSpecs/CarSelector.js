@@ -148,29 +148,29 @@ const CarSelector = () => {
 
     const DropdownColumn = ({ car, carNum, models, submodels, trims, align }) => (
         <div className={`car-selector-column ${align}`}>
-            <label className="car-selector-label">Make:</label>
+            <label className="car-selector-label">Марка:</label>
             <select className="car-selector-select" value={car.make} onChange={e => handleChange(carNum, "make", e.target.value)} disabled={loadingMakes}>
                 {loadingMakes ? <option>Loading Makes...</option> : <>
-                    <option value="">Select Make</option>
+                    <option value="">Избери марка</option>
                     {makes.map(make => <option key={make.id} value={make.id}>{make.name}</option>)}
                 </>}
             </select>
 
-            <label className="car-selector-label">Model:</label>
+            <label className="car-selector-label">Модел:</label>
             <select className="car-selector-select" value={car.model} onChange={e => handleChange(carNum, "model", e.target.value)} disabled={!models.length}>
-                <option value="">Select Model</option>
+                <option value="">Избери модел</option>
                 {models.map(model => <option key={model.name} value={model.name}>{model.name}</option>)}
             </select>
 
-            <label className="car-selector-label">Submodel:</label>
+            <label className="car-selector-label">Подмодел:</label>
             <select className="car-selector-select" value={car.submodel} onChange={e => handleChange(carNum, "submodel", e.target.value)} disabled={!submodels.length}>
-                <option value="">Select Submodel</option>
+                <option value="">Избери подмодел</option>
                 {submodels.map(sub => <option key={sub.id} value={sub.id}>{sub.submodel}</option>)}
             </select>
 
-            <label className="car-selector-label">Trim:</label>
+            <label className="car-selector-label">Опрема:</label>
             <select className="car-selector-select" value={car.trim} onChange={e => handleChange(carNum, "trim", e.target.value)} disabled={!trims.length}>
-                <option value="">Select Trim</option>
+                <option value="">Избери опрема</option>
                 {trims.map(trim => <option key={trim.id} value={trim.id}>{trim.trim}</option>)}
             </select>
         </div>
@@ -179,8 +179,8 @@ const CarSelector = () => {
     const ResultColumn = ({ engines, bodies, align }) => {
         if (!showResults) return null;
         return (
-            <div className={`car-selector-result-column ${align}`}>
-                {engines.length ? <>
+            <div className={`car-selector-result-column ${align} ${showResults ? "show" : ""}`}>
+            {engines.length ? <>
                     <h3>Engine Info:</h3>
                     <ul>
                         {engines.map((e, idx) => ENGINE_FIELDS.map(field => <li key={`${idx}-${field}`}><strong>{field}:</strong> {e[field] ?? "N/A"}</li>))}
@@ -199,9 +199,9 @@ const CarSelector = () => {
 
     return (
         <div className="car-selector-container">
-            <h2 className="car-selector-title">Car Specs</h2>
+            <h2 className="car-selector-title">Спецификации</h2>
             <div className="compare-toggle-container">
-                <span>Compare</span>
+                <span>Спореди два автомобили</span>
                 <label className="switch">
                     <input type="checkbox" checked={compareMode} onChange={e => setCompareMode(e.target.checked)} />
                     <span className="slider round"></span>
@@ -215,7 +215,7 @@ const CarSelector = () => {
 
             <div className="car-selector-actions">
                 <button className="car-selector-button" onClick={handleEnter}>
-                    {loadingResults ? "Loading..." : "Enter"}
+                    {loadingResults ? "Loading..." : "Спореди"}
                 </button>
             </div>
 

@@ -7,7 +7,9 @@ import { useAuth } from "./hooks/useAuth";
 import CarSelector from "./ui/carSpecs/CarSelector";
 import Register from "./ui/registerForm/Register";
 import CarDetailsPage from "./ui/carDetailsPage/CarDetailsPage";
-import CarEditPage from "./ui/carDetailsPage/CarEditPage"; // <-- create this page
+import CarEditPage from "./ui/carDetailsPage/CarEditPage";
+import HomePage from "./ui/pages/HomePage";
+import Footer from "./ui/footer/Footer"; // <-- create this page
 
 function App() {
     const { user, loading } = useAuth();
@@ -25,7 +27,7 @@ function App() {
                 <Route path="/carspecs" element={user ? <CarSelector /> : <Navigate to="/login" />} />
                 <Route path="/cars/:id" element={user ? <CarDetailsPage /> : <Navigate to="/login" />} />
                 <Route path="/cars/:id/edit" element={user ? <CarEditPage /> : <Navigate to="/login" />} /> {/* <-- Added */}
-
+                <Route path="/" element={<HomePage />} />
                 {/* Auth routes */}
                 <Route path="/login" element={!user ? <AuthForm mode="login" /> : <Navigate to="/user" />} />
                 <Route path="/register" element={!user ? <Register mode="register" /> : <Navigate to="/user" />} />
@@ -33,6 +35,8 @@ function App() {
                 {/* Default route */}
                 <Route path="*" element={<Navigate to={user ? "/user" : "/login"} />} /> {/* Catch-all */}
             </Routes>
+
+            <Footer/>
         </Router>
     );
 }

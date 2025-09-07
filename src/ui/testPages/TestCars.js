@@ -18,7 +18,6 @@ const TestCars = () => {
     const [loadingMakes, setLoadingMakes] = useState(true);
     const [loadingModels, setLoadingModels] = useState(false);
 
-    // Fetch all makes
     useEffect(() => {
         const fetchMakes = async () => {
             setLoadingMakes(true);
@@ -36,7 +35,6 @@ const TestCars = () => {
         fetchMakes();
     }, []);
 
-    // Fetch models whenever a make is selected
     useEffect(() => {
         if (!formData.make) return setModels([]);
         const fetchModels = async () => {
@@ -73,7 +71,7 @@ const TestCars = () => {
                     <select name="make" value={formData.make} onChange={handleChange} disabled={loadingMakes}>
                         {loadingMakes ? <option>Loading Makes...</option> : <>
                             <option value="">Select Make</option>
-                            {makes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                            {makes.map(m => <option key={m.id} value={m.make}>{m.name}</option>)}
                         </>}
                     </select>
                 </div>

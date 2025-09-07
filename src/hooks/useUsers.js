@@ -6,7 +6,6 @@ const useUsers = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch all users from repository
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
@@ -21,7 +20,6 @@ const useUsers = () => {
         }
     }, []);
 
-    // Update a user and refetch
     const onUpdate = useCallback(
         async (docId, data) => {
             try {
@@ -35,13 +33,11 @@ const useUsers = () => {
         [fetchUsers]
     );
 
-    // Find user by UID (memoized)
     const findUserById = useCallback(
         (uid) => users.find((user) => user.uid === uid) || null,
         [users]
     );
 
-    // Initial fetch on mount
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);

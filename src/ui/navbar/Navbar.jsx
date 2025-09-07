@@ -1,10 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../config/firebase";
-import { useAuth } from "../../hooks/useAuth";
+import {Link, useNavigate} from "react-router-dom";
+import {auth} from "../../config/firebase";
+import {useAuth} from "../../hooks/useAuth";
+import {useState} from "react";
+import logo from "../../images/logo-tp-novo.png"; // патека до логото
 
 export default function Navbar() {
-    const { user } = useAuth();
+    const {user} = useAuth();
     const navigate = useNavigate();
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [hoveredLink, setHoveredLink] = useState("")
 
     const handleLogout = async () => {
         try {
@@ -17,40 +21,69 @@ export default function Navbar() {
 
     return (
         <nav style={styles.navbar}>
-            {/* Left Section: Navigation Links */}
-            <div style={styles.leftLinks}>
-                {user ? (
-                    <>
-                        <Link to="/user" style={styles.link}>Dashboard</Link>
-                        <Link to="/threads" style={styles.link}>Threads</Link>
-                        <Link to="/carspecs" style={styles.link}>Car Specs</Link>
-                    </>
-                ) : (
-                    <Link to="/" style={styles.link}>Home</Link>
-                )}
+            {/* ЛОГО ЛЕВО */}
+            <div style={styles.leftSection}>
+                <Link to="/">
+                    <img src={logo} alt="logo" style={styles.logo}/>
+                </Link>
             </div>
 
-            {/* Right Section: Auth Links or User Info */}
-            <div style={styles.rightSection}>
+            {/* ЛИНКОВИ ДЕСНО */}
+            <div style={styles.rightLinks}>
                 {user ? (
                     <>
-                        <span style={styles.userGreeting}>Hi, {user.email}</span>
-                        <button
-                            style={styles.logoutButton}
-                            onClick={handleLogout}
+                        <Link to="/" style={{
+                            ...styles.link,
+                            ...(hoveredLink === "/" ? styles.linkHover : {})
+                        }}
+                              onMouseEnter={() => setHoveredLink("/")}
+                              onMouseLeave={() => setHoveredLink("")}
+                        >Home</Link>
+
+                        <Link to="/threads" style={{
+                            ...styles.link,
+                            ...(hoveredLink === "threads" ? styles.linkHover : {})
+                        }}
+                              onMouseEnter={() => setHoveredLink("threads")}
+                              onMouseLeave={() => setHoveredLink("")}
+                        >Threads</Link>
+
+                        <Link to="/cars" style={{
+                            ...styles.link,
+                            ...(hoveredLink === "cars" ? styles.linkHover : {})
+                        }}
+                              onMouseEnter={() => setHoveredLink("cars")}
+                              onMouseLeave={() => setHoveredLink("")}
+                        >See All Cars</Link>
+
+                        <Link to="/carspecs" style={{
+                            ...styles.link,
+                            ...(hoveredLink === "carspecs" ? styles.linkHover : {})
+                        }}
+                              onMouseEnter={() => setHoveredLink("carspecs")}
+                              onMouseLeave={() => setHoveredLink("")}
+                        >Compare Cars</Link>
+
+                        <div
+                            style={styles.profileWrapper}
+                            onMouseEnter={() => setShowDropdown(true)}
+                            onMouseLeave={() => setShowDropdown(false)}
                         >
-                            Logout
-                        </button>
+                            <img
+                                src={user.photoURL || "/default-avatar-icon.jpg"}
+                                alt="pp"
+                                style={styles.avatar}
+                            />
+                            {showDropdown && (
+                                <div style={styles.dropdown}>
+                                    <Link to="/user" style={styles.dropdownLink}>My Profile</Link>
+                                    <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+                                </div>
+                            )}
+                        </div>
                     </>
                 ) : (
-                    <>
-                        <Link to="/login" style={{ ...styles.link, ...styles.loginLink }}>
-                            Login
-                        </Link>
-                        <Link to="/register" style={{ ...styles.link, ...styles.signupLink }}>
-                            Sign Up
-                        </Link>
-                    </>
+                    <Link to="/login" style={styles.loginButton}>Login</Link>
                 )}
             </div>
         </nav>
@@ -62,57 +95,86 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "0.8rem 2rem",
-        backgroundColor: "#4f46e5",
-        color: "#fff",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        position: "sticky",
+        padding: "1.3rem 4rem",
+        backgroundColor: "#ECECE7",
         top: 0,
         zIndex: 1000,
+        fontFamily: "'Inter', sans-serif", // поелегантен фонт
     },
-    leftLinks: {
+    leftSection: {
         display: "flex",
-        gap: "1.5rem",
         alignItems: "center",
+    },
+    logo: {
+        marginTop: "-3.8rem",
+        marginBottom: "-3.8rem",
+        height: "auto",
+        width: "16rem",
+        cursor: "pointer"
+    },
+    rightLinks: {
+        display: "flex",
+        alignItems: "center",
+        gap: "3rem",
     },
     link: {
-        color: "#fff",
+        color: "#1F2937", // темно сива за поелегантен изглед
         textDecoration: "none",
         fontWeight: 500,
-        transition: "color 0.2s",
+        fontSize: "17px",
+        transition: "color 0.3s, transform 0.2s",
     },
-    loginLink: {
-        fontWeight: 600,
-        padding: "0.4rem 1rem",
-        borderRadius: "6px",
-        backgroundColor: "#fff",
-        color: "#4f46e5",
-        transition: "all 0.2s",
+    linkHover: {
+        color: "#b8b8be", // лилаво при hover
     },
-    signupLink: {
-        fontWeight: 600,
-        padding: "0.4rem 1rem",
-        borderRadius: "6px",
-        backgroundColor: "#10b981",
-        color: "#fff",
-        transition: "all 0.2s",
+    profileWrapper: {
+        position: "relative",
+        display: "inline-block",
     },
-    rightSection: {
+    avatar: {
+        width: "40px",
+        height: "40px",
+        borderRadius: "50%",
+        cursor: "pointer",
+        border: "3px solid transparent",
+        transition: "border 0.3s",
+    },
+    dropdown: {
+        position: "absolute",
+        right: 0,
+        top: "49px",
+        backgroundColor: "white",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        borderRadius: "8px",
+        overflow: "hidden",
         display: "flex",
-        alignItems: "center",
-        gap: "1rem",
+        flexDirection: "column",
+        minWidth: "160px",
+        zIndex: 9999,
     },
-    userGreeting: {
-        fontWeight: 500,
+    dropdownLink: {
+        padding: "10px 15px",
+        textDecoration: "none",
+        color: "#333",
+        display: "block",
     },
     logoutButton: {
+        padding: "10px 15px",
+        background: "none",
+        border: "none",
+        color: "red",
+        textAlign: "left",
+        width: "100%",
+        cursor: "pointer",
+    },
+    loginButton: {
         padding: "0.4rem 1rem",
         borderRadius: "6px",
-        border: "none",
-        backgroundColor: "#f43f5e",
+        backgroundColor: "#4f46e5",
         color: "#fff",
-        fontWeight: 500,
-        cursor: "pointer",
-        transition: "background 0.2s",
+        textDecoration: "none",
+        fontWeight: 600,
+        transition: "background 0.3s",
     },
 };
+

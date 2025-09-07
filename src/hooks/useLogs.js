@@ -9,13 +9,12 @@ const initialState = {
 const useLogs = (carId) => {
     const [state, setState] = useState(initialState);
 
-    // Fetch logs with real-time subscription
     const fetchLogs = useCallback(() => {
         const unsubscribe = logsRepository.findAll(carId, (logs) => {
             setState({ logs, loading: false });
         });
 
-        return unsubscribe; // make sure unsubscribe is returned for cleanup
+        return unsubscribe;
     }, [carId]);
 
     const onAdd = useCallback((data) => {
