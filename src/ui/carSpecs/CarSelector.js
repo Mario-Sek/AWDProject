@@ -38,6 +38,68 @@ const CarSelector = () => {
     const [loadingResults, setLoadingResults] = useState(false);
     const [compareMode, setCompareMode] = useState(false);
 
+    // Field display names mapping
+    const getFieldDisplayName = (field) => {
+        const fieldNames = {
+            "year": "Year",
+            "trim": "Trim",
+            "engine_type": "Engine Type",
+            "fuel_type": "Fuel Type",
+            "cylinders": "Cylinders",
+            "size": "Engine Size",
+            "horsepower_hp": "Engine Power",
+            "horsepower_rpm": "Power RPM",
+            "torque_ft_lbs": "Torque",
+            "torque_rpm": "Torque RPM",
+            "valves": "Valves",
+            "valve_timing": "Valve Timing",
+            "cam_type": "Cam Type",
+            "drive_type": "Drive Type",
+            "transmission": "Transmission",
+            "type": "Body Type",
+            "doors": "Doors",
+            "length": "Length",
+            "width": "Width",
+            "seats": "Seats",
+            "height": "Height",
+            "wheel_base": "Wheelbase",
+            "ground_clearance": "Ground Clearance",
+            "cargo_capacity": "Cargo Capacity",
+            "curb_weight": "Curb Weight"
+        };
+        return fieldNames[field] || field;
+    };
+
+    const convertValue = (value, field) => {
+        if (!value || value === "N/A" || value === null || value === undefined) return "N/A";
+
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) return value;
+
+        switch (field) {
+            case "horsepower_hp":
+                const kw = Math.round(numValue * 0.7457);
+                const hp = Math.round(numValue);
+                return `${kw} kW / ${hp} hp`;
+            case "torque_ft_lbs":
+                return `${Math.round(numValue * 1.356)} Nm`;
+            case "length":
+            case "width":
+            case "height":
+            case "wheel_base":
+            case "ground_clearance":
+                return `${(numValue * 2.54).toFixed(1)} cm`;
+            case "cargo_capacity":
+                return `${Math.round(numValue * 28.317)} L`;
+            case "curb_weight":
+                return `${Math.round(numValue * 0.4536)} kg`;
+            case "size":
+                return `${numValue} L`;
+            default:
+                return value;
+        }
+    };
+
     useEffect(() => {
         const loadMakes = async () => {
             try {
@@ -146,10 +208,21 @@ const CarSelector = () => {
         setLoadingResults(false);
     };
 
-    const DropdownColumn = ({ car, carNum, models, submodels, trims, align }) => (
-        <div className={`car-selector-column ${align}`}>
+    const getCarName = (car, makes, models) => {
+        const make = makes.find(m => m.id === car.make);
+        const model = models.find(m => m.name === car.model);
+        return `${make?.name || 'Unknown'} ${model?.name || car.model || 'Unknown'}`;
+    };
+
+    const DropdownColumn = ({ car, carNum, models, submodels, trims }) => (
+        <div className="car-selector-column">
             <label className="car-selector-label">Марка:</label>
-            <select className="car-selector-select" value={car.make} onChange={e => handleChange(carNum, "make", e.target.value)} disabled={loadingMakes}>
+            <select
+                className="car-selector-select"
+                value={car.make}
+                onChange={e => handleChange(carNum, "make", e.target.value)}
+                disabled={loadingMakes}
+            >
                 {loadingMakes ? <option>Loading Makes...</option> : <>
                     <option value="">Избери марка</option>
                     {makes.map(make => <option key={make.id} value={make.id}>{make.name}</option>)}
@@ -157,71 +230,173 @@ const CarSelector = () => {
             </select>
 
             <label className="car-selector-label">Модел:</label>
-            <select className="car-selector-select" value={car.model} onChange={e => handleChange(carNum, "model", e.target.value)} disabled={!models.length}>
+            <select
+                className="car-selector-select"
+                value={car.model}
+                onChange={e => handleChange(carNum, "model", e.target.value)}
+                disabled={!models.length}
+            >
                 <option value="">Избери модел</option>
                 {models.map(model => <option key={model.name} value={model.name}>{model.name}</option>)}
             </select>
 
             <label className="car-selector-label">Подмодел:</label>
-            <select className="car-selector-select" value={car.submodel} onChange={e => handleChange(carNum, "submodel", e.target.value)} disabled={!submodels.length}>
+            <select
+                className="car-selector-select"
+                value={car.submodel}
+                onChange={e => handleChange(carNum, "submodel", e.target.value)}
+                disabled={!submodels.length}
+            >
                 <option value="">Избери подмодел</option>
                 {submodels.map(sub => <option key={sub.id} value={sub.id}>{sub.submodel}</option>)}
             </select>
 
             <label className="car-selector-label">Опрема:</label>
-            <select className="car-selector-select" value={car.trim} onChange={e => handleChange(carNum, "trim", e.target.value)} disabled={!trims.length}>
+            <select
+                className="car-selector-select"
+                value={car.trim}
+                onChange={e => handleChange(carNum, "trim", e.target.value)}
+                disabled={!trims.length}
+            >
                 <option value="">Избери опрема</option>
                 {trims.map(trim => <option key={trim.id} value={trim.id}>{trim.trim}</option>)}
             </select>
         </div>
     );
 
-    const ResultColumn = ({ engines, bodies, align }) => {
+    const ResultColumn = ({ engines, bodies, carName, isLoading }) => {
         if (!showResults) return null;
-        return (
-            <div className={`car-selector-result-column ${align} ${showResults ? "show" : ""}`}>
-            {engines.length ? <>
-                    <h3>Engine Info:</h3>
-                    <ul>
-                        {engines.map((e, idx) => ENGINE_FIELDS.map(field => <li key={`${idx}-${field}`}><strong>{field}:</strong> {e[field] ?? "N/A"}</li>))}
-                    </ul>
-                </> : <p className="loading-text">No engine info</p>}
 
-                {bodies.length ? <>
-                    <h3>Body Info:</h3>
-                    <ul>
-                        {bodies.map((b, idx) => BODY_FIELDS.map(field => <li key={`${idx}-${field}`}><strong>{field}:</strong> {b[field] ?? "N/A"}</li>))}
-                    </ul>
-                </> : <p className="loading-text">No body info</p>}
+        if (isLoading) {
+            return (
+                <div className={`car-selector-result-column ${!compareMode ? 'single' : ''}`}>
+                    <p className="loading-text">Loading specifications...</p>
+                </div>
+            );
+        }
+
+        return (
+            <div className={`car-selector-result-column ${!compareMode ? 'single' : ''}`}>
+
+                {engines.length > 0 ? (
+                    <>
+                        <h3>Engine Specifications</h3>
+                        <ul>
+                            {engines.map((e, idx) =>
+                                ENGINE_FIELDS.map(field => {
+                                    const displayValue = convertValue(e[field], field);
+                                    const displayName = getFieldDisplayName(field);
+                                    return (
+                                        <li key={`${idx}-${field}`}>
+                                            <strong>{displayName}:</strong>
+                                            <span className="value">{displayValue}</span>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    </>
+                ) : (
+                    <div className="no-data-message">
+                        No engine specifications available
+                    </div>
+                )}
+
+                {bodies.length > 0 ? (
+                    <>
+                        <h3>Body Specifications</h3>
+                        <ul>
+                            {bodies.map((b, idx) =>
+                                BODY_FIELDS.map(field => {
+                                    const displayValue = convertValue(b[field], field);
+                                    const displayName = getFieldDisplayName(field);
+                                    return (
+                                        <li key={`${idx}-${field}`}>
+                                            <strong>{displayName}:</strong>
+                                            <span className="value">{displayValue}</span>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    </>
+                ) : (
+                    <div className="no-data-message">
+                        No body specifications available
+                    </div>
+                )}
             </div>
         );
     };
 
     return (
-        <div className="car-selector-container">
-            <h2 className="car-selector-title">Спецификации</h2>
-            <div className="compare-toggle-container">
-                <span>Спореди два автомобили</span>
-                <label className="switch">
-                    <input type="checkbox" checked={compareMode} onChange={e => setCompareMode(e.target.checked)} />
-                    <span className="slider round"></span>
-                </label>
-            </div>
+        <div className="car-selector-page">
+            <div className="car-selector-container">
+                <h2 className="car-selector-title">Спецификации</h2>
 
-            <div className="car-selector-compare">
-                <DropdownColumn car={car1} carNum={1} models={models1} submodels={submodels1} trims={trims1} align="left" />
-                {compareMode && <DropdownColumn car={car2} carNum={2} models={models2} submodels={submodels2} trims={trims2} align="right" />}
-            </div>
+                <div className="compare-toggle-container">
+                    <span style={{ fontSize: "1rem", fontWeight: "500", color: "#555" }}>
+                        Спореди два автомобили
+                    </span>
+                    <label className="switch">
+                        <input
+                            type="checkbox"
+                            checked={compareMode}
+                            onChange={e => setCompareMode(e.target.checked)}
+                        />
+                        <span className="slider"></span>
+                    </label>
+                </div>
 
-            <div className="car-selector-actions">
-                <button className="car-selector-button" onClick={handleEnter}>
-                    {loadingResults ? "Loading..." : "Спореди"}
-                </button>
-            </div>
+                <div className="car-selector-form">
+                    <div className="car-selector-compare">
+                        <DropdownColumn
+                            car={car1}
+                            carNum={1}
+                            models={models1}
+                            submodels={submodels1}
+                            trims={trims1}
+                        />
+                        {compareMode && (
+                            <DropdownColumn
+                                car={car2}
+                                carNum={2}
+                                models={models2}
+                                submodels={submodels2}
+                                trims={trims2}
+                            />
+                        )}
+                    </div>
 
-            <div className="car-selector-result">
-                <ResultColumn engines={engines1} bodies={bodies1} align="left" />
-                {compareMode && <ResultColumn engines={engines2} bodies={bodies2} align="right" />}
+                    <div className="car-selector-actions">
+                        <button
+                            className="car-selector-button"
+                            onClick={handleEnter}
+                            disabled={loadingResults}
+                        >
+                            {loadingResults ? "Loading..." : "Спореди"}
+                        </button>
+                    </div>
+                </div>
+
+                {showResults && (
+                    <div className={`car-selector-result ${!compareMode ? 'single-column' : ''}`}>
+                        <ResultColumn
+                            engines={engines1}
+                            bodies={bodies1}
+                            carName={getCarName(car1, makes, models1)}
+                            isLoading={loadingResults}
+                        />
+                        {compareMode && (
+                            <ResultColumn
+                                engines={engines2}
+                                bodies={bodies2}
+                                carName={getCarName(car2, makes, models2)}
+                                isLoading={loadingResults}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
