@@ -15,10 +15,14 @@ const TestComments = ({ threadId, findUserById }) => {
     const { user } = useAuth();
     const { comments, onAdd, onDelete, onUpdate } = useComments(threadId);
     const [formData, setFormData] = useState(initialFormData);
-
     const [showForm, setShowForm] = useState(false);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editFormData, setEditFormData] = useState({ description: "", image: "" });
+    const [replyFormOpen, setReplyFormOpen] = useState({});
+    const [replyFormData, setReplyFormData] = useState({});
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [commentReplyFormOpen, setCommentReplyFormOpen] = useState({});
+    const [sortBy, setSortBy] = useState("newest"); // New state for sorting
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -80,36 +84,359 @@ const TestComments = ({ threadId, findUserById }) => {
         cancelEditing();
     };
 
-    const styles = {
-        container: { maxWidth: "700px", margin: "1rem auto", fontFamily: "Arial, sans-serif" },
-        form: { display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" },
-        textarea: { padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc", minHeight: "60px" },
-        input: { padding: "0.5rem", borderRadius: "6px", border: "1px solid #ccc" },
-        button: { padding: "0.4rem 0.8rem", borderRadius: "6px", border: "none", backgroundColor: "#007bff", color: "#fff", cursor: "pointer", fontSize: "0.8rem" },
-        toggleButton: { padding: "0.4rem 0.8rem", borderRadius: "6px", border: "1px solid #007bff", backgroundColor: "#fff", color: "#007bff", cursor: "pointer", marginBottom: "1rem", fontSize: "0.8rem" },
-        commentCard: { border: "1px solid #eee", borderRadius: "8px", padding: "1rem", marginBottom: "1rem", boxShadow: "0 2px 5px rgba(0,0,0,0.05)" },
-        username: { fontWeight: "bold", color: "#333" },
-        metadata: { fontSize: "0.8rem", color: "#555" },
-        buttonsContainer: { marginTop: "0.5rem", display: "flex", gap: "0.4rem", flexWrap: "wrap", alignItems: "center" },
-        baseButton: { padding: "0.35rem 0.6rem", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "0.8rem", minWidth: "65px", textAlign: "center" },
-        upvote: { backgroundColor: "#10b981", color: "#fff" },
-        downvote: { backgroundColor: "#ef4444", color: "#fff" },
-        deleteButton: { backgroundColor: "#dc3545", color: "#fff" },
-        editButton: { backgroundColor: "#f59e0b", color: "#fff" },
-        replyButton: { backgroundColor: "#6b7280", color: "#fff" },
+    const handleCommentReplyToggle = (commentId) => {
+        setCommentReplyFormOpen(prev => ({
+            ...prev,
+            [commentId]: !prev[commentId]
+        }));
     };
+
+    const handleReplySubmit = (commentId) => {
+        const data = replyFormData[commentId];
+        if (!data?.description?.trim() || !user) return;
+
+        console.log("Reply submitted:", { commentId, data });
+
+        setReplyFormOpen((prev) => ({ ...prev, [commentId]: false }));
+        setReplyFormData((prev) => ({ ...prev, [commentId]: { description: "", image: "" } }));
+    };
+
+    const handleReplyChange = (commentId, field, value) => {
+        setReplyFormData((prev) => ({
+            ...prev,
+            [commentId]: { ...prev[commentId], [field]: value }
+        }));
+    };
+
+    const confirmDelete = () => {
+        onDelete(deleteTarget);
+        setDeleteTarget(null);
+    };
+
+    // Sort comments based on selected criteria
+    const getSortedComments = () => {
+        const sortedComments = [...comments];
+
+        if (sortBy === "newest") {
+            return sortedComments.sort((a, b) => {
+                const dateA = a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                const dateB = b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                return dateB - dateA;
+            });
+        } else if (sortBy === "topRated") {
+            return sortedComments.sort((a, b) => {
+                const netVotesA = (a.upvotes || 0) - (a.downvotes || 0);
+                const netVotesB = (b.upvotes || 0) - (b.downvotes || 0);
+                return netVotesB - netVotesA;
+            });
+        }
+
+        return sortedComments;
+    };
+
+    const styles = {
+        container: {
+            maxWidth: "800px",
+            margin: "2rem auto 0",
+            fontFamily: "'Poppins', sans-serif",
+            padding: "0 1rem"
+        },
+        header: {
+            fontSize: "1.6rem",
+            fontWeight: "600",
+            color: "#333",
+            marginBottom: "1.5rem",
+            paddingBottom: "0.75rem",
+            borderBottom: "2px solid #eee"
+        },
+        // New styles for the controls container
+        controlsContainer: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1.5rem",
+            gap: "1rem"
+        },
+        sortContainer: {
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem"
+        },
+        sortLabel: {
+            fontSize: "0.9rem",
+            fontWeight: "500",
+            color: "#555"
+        },
+        sortSelect: {
+            padding: "0.4rem 0.8rem",
+            border: "1px solid #ddd",
+            borderRadius: "5px",
+            fontSize: "0.85rem",
+            fontFamily: "'Poppins', sans-serif",
+            backgroundColor: "#fff",
+            cursor: "pointer"
+        },
+        unifiedForm: {
+            backgroundColor: "#f8f9fa",
+            padding: "1rem",
+            borderRadius: "8px",
+            border: "1px solid #eee",
+            marginTop: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem"
+        },
+        form: {
+            backgroundColor: "#fff",
+            padding: "1.5rem",
+            borderRadius: "10px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            marginBottom: "1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem"
+        },
+        textarea: {
+            width: "100%",
+            display: "block",
+            padding: "0.75rem 1rem",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            fontSize: "1rem",
+            fontFamily: "'Poppins', sans-serif",
+            minHeight: "80px",
+            resize: "vertical",
+            boxSizing: "border-box"
+        },
+        input: {
+            width: "100%",
+            display: "block",
+            padding: "0.6rem 1rem",
+            border: "1px solid #ddd",
+            borderRadius: "6px",
+            fontSize: "1rem",
+            fontFamily: "'Poppins', sans-serif",
+            boxSizing: "border-box"
+        },
+        smallButton: {
+            padding: "0.4rem 0.8rem",
+            backgroundColor: "#4f46e5",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            fontWeight: "600",
+            cursor: "pointer",
+            fontSize: "0.8rem",
+            minWidth: "50px",
+            height: "28px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center"
+        },
+        secondaryButton: {
+            backgroundColor: "#6b7280",
+            color: "white"
+        },
+        toggleButton: {
+            padding: "0.4rem 0.8rem",
+            backgroundColor: "#fff",
+            color: "#4f46e5",
+            border: "2px solid #4f46e5",
+            borderRadius: "5px",
+            fontWeight: "600",
+            cursor: "pointer",
+            fontSize: "0.8rem"
+        },
+        commentCard: {
+            backgroundColor: "#fff",
+            border: "1px solid #eee",
+            borderRadius: "10px",
+            padding: "1.5rem",
+            marginBottom: "1.5rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+        },
+        commentHeader: {
+            marginBottom: "0.75rem"
+        },
+        username: {
+            fontWeight: "600",
+            color: "#4f46e5",
+            fontSize: "1rem"
+        },
+        commentText: {
+            color: "#555",
+            fontSize: "1rem",
+            lineHeight: "1.6",
+            margin: "0.75rem 0"
+        },
+        commentImage: {
+            maxWidth: "100%",
+            borderRadius: "8px",
+            marginTop: "0.75rem"
+        },
+        metadata: {
+            fontSize: "0.9rem",
+            color: "#777",
+            marginBottom: "1rem"
+        },
+        buttonsContainer: {
+            display: "flex",
+            gap: "0.4rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginTop: "1rem"
+        },
+        voteButton: {
+            padding: "0.25rem 0.5rem",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            minWidth: "50px",
+            height: "26px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.25rem"
+        },
+        upvoteButton: {
+            backgroundColor: "#10b981",
+            color: "white"
+        },
+        downvoteButton: {
+            backgroundColor: "#ef4444",
+            color: "white"
+        },
+        actionButton: {
+            padding: "0.25rem 0.5rem",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+            fontWeight: "500",
+            minWidth: "45px",
+            height: "26px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center"
+        },
+        editButton: {
+            backgroundColor: "#f59e0b",
+            color: "white"
+        },
+        deleteButton: {
+            backgroundColor: "#dc3545",
+            color: "white"
+        },
+        replyButton: {
+            backgroundColor: "#fff",
+            color: "#4f46e5",
+            border: "1px solid #4f46e5"
+        },
+        voteActive: { opacity: 1 },
+        voteInactive: { opacity: 0.6 },
+        formButtons: {
+            display: "flex",
+            gap: "0.5rem",
+            justifyContent: "flex-end"
+        },
+        modalOverlay: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000
+        },
+        modalContent: {
+            backgroundColor: "#fff",
+            padding: "2rem",
+            borderRadius: "10px",
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2)",
+            maxWidth: "400px",
+            width: "90%",
+            textAlign: "center"
+        },
+        modalTitle: {
+            fontSize: "1.2rem",
+            fontWeight: "600",
+            color: "#333",
+            marginBottom: "1rem"
+        },
+        modalText: {
+            color: "#666",
+            marginBottom: "1.5rem",
+            lineHeight: "1.5"
+        },
+        modalButtons: {
+            display: "flex",
+            gap: "1rem",
+            justifyContent: "center"
+        },
+        modalCancelButton: {
+            padding: "0.5rem 1rem",
+            backgroundColor: "#6b7280",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "600",
+            cursor: "pointer",
+            fontSize: "0.9rem"
+        },
+        modalDeleteButton: {
+            padding: "0.5rem 1rem",
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "600",
+            cursor: "pointer",
+            fontSize: "0.9rem"
+        }
+    };
+
+    const sortedComments = getSortedComments();
 
     return (
         <div style={styles.container}>
-            {!showForm ? (
-                <button style={styles.toggleButton} onClick={() => setShowForm(true)}>Post Comment</button>
-            ) : (
+            <h3 style={styles.header}>Comments ({comments.length})</h3>
+
+            {/* New controls container with sort options on left and add comment button on right */}
+            <div style={styles.controlsContainer}>
+                <div style={styles.sortContainer}>
+                    <span style={styles.sortLabel}>Sort by:</span>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        style={styles.sortSelect}
+                    >
+                        <option value="newest">Newest</option>
+                        <option value="topRated">Top Rated</option>
+                    </select>
+                </div>
+
+                {!showForm && (
+                    <button
+                        style={styles.toggleButton}
+                        onClick={() => setShowForm(true)}
+                    >
+                        Add Comment
+                    </button>
+                )}
+            </div>
+
+            {showForm && (
                 <div style={styles.form}>
                     <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        placeholder="Add a comment..."
+                        placeholder="Share your thoughts about this discussion..."
                         style={styles.textarea}
                     />
                     <input
@@ -122,31 +449,51 @@ const TestComments = ({ threadId, findUserById }) => {
                                 setFormData((prev) => ({ ...prev, image: blobUrl }));
                             }
                         }}
-                        style={{ width: "100%", marginBottom: "0.5rem" }}
+                        style={styles.input}
                     />
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                        <button style={styles.button} onClick={handleSubmit}>Post</button>
-                        <button style={{ ...styles.button, backgroundColor: "#6b7280" }} onClick={() => setShowForm(false)}>Cancel</button>
+                    <div style={styles.formButtons}>
+                        <button
+                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                            onClick={() => setShowForm(false)}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            style={styles.smallButton}
+                            onClick={handleSubmit}
+                        >
+                            Post Comment
+                        </button>
                     </div>
                 </div>
             )}
 
-            <ul style={{ listStyle: "none", padding: 0 }}>
-                {comments.map((comment) => {
+            <div>
+                {sortedComments.map((comment) => {
                     const commentUser = findUserById(comment.userId);
                     const currentVote = comment.votedBy?.[user?.uid] || null;
                     const isEditing = editingCommentId === comment.id;
                     const isAuthor = comment.userId === user?.uid;
 
                     return (
-                        <li key={comment.id} style={styles.commentCard}>
-                            <div style={styles.username}>{commentUser?.username || commentUser?.email || "Unknown User"}</div>
+                        <div key={comment.id} style={styles.commentCard}>
+                            <div style={styles.commentHeader}>
+                                <div style={styles.username}>
+                                    {commentUser?.username || commentUser?.email || "Unknown User"}
+                                </div>
+                                <div style={styles.metadata}>
+                                    {comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleString() : new Date(comment.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+
                             {isEditing ? (
-                                <>
+                                <div style={styles.unifiedForm}>
                                     <textarea
                                         value={editFormData.description}
-                                        onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                                        style={{ width: "100%", minHeight: "60px", marginBottom: "0.5rem" }}
+                                        onChange={(e) =>
+                                            setEditFormData({ ...editFormData, description: e.target.value })
+                                        }
+                                        style={styles.textarea}
                                     />
                                     <input
                                         type="file"
@@ -158,51 +505,121 @@ const TestComments = ({ threadId, findUserById }) => {
                                                 setEditFormData((prev) => ({ ...prev, image: blobUrl }));
                                             }
                                         }}
-                                        style={{ width: "100%", marginBottom: "0.5rem" }}
+                                        style={styles.input}
                                     />
-                                    <div style={styles.buttonsContainer}>
-                                        <button style={{ ...styles.baseButton, ...styles.editButton }} onClick={() => saveEdit(comment.id)}>Save</button>
-                                        <button style={{ ...styles.baseButton, backgroundColor: "#6b7280", color: "#fff" }} onClick={cancelEditing}>Cancel</button>
+                                    <div style={styles.formButtons}>
+                                        <button
+                                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                                            onClick={cancelEditing}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            style={styles.smallButton}
+                                            onClick={() => saveEdit(comment.id)}
+                                        >
+                                            Save
+                                        </button>
                                     </div>
-                                </>
+                                </div>
                             ) : (
                                 <>
-                                    <p>{comment.description}</p>
-                                    {comment.image && <img src={comment.image} alt="comment" style={{ maxWidth: "100%", borderRadius: "6px" }} />}
-                                    <div style={styles.metadata}>
-                                        Posted: {comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleString() : new Date(comment.createdAt).toLocaleString()}
-                                    </div>
+                                    <p style={styles.commentText}>{comment.description}</p>
+                                    {comment.image &&
+                                        <img src={comment.image} alt="Comment" style={styles.commentImage} />
+                                    }
 
                                     <div style={styles.buttonsContainer}>
                                         <button
                                             disabled={!user}
-                                            style={{ ...styles.baseButton, ...styles.upvote, opacity: currentVote === "upvote" ? 1 : 0.6 }}
+                                            style={{
+                                                ...styles.voteButton,
+                                                ...styles.upvoteButton,
+                                                ...(currentVote === "upvote"
+                                                    ? styles.voteActive
+                                                    : styles.voteInactive)
+                                            }}
                                             onClick={() => handleVote(comment, "upvote")}
                                         >
                                             👍 {comment.upvotes}
                                         </button>
                                         <button
                                             disabled={!user}
-                                            style={{ ...styles.baseButton, ...styles.downvote, opacity: currentVote === "downvote" ? 1 : 0.6 }}
+                                            style={{
+                                                ...styles.voteButton,
+                                                ...styles.downvoteButton,
+                                                ...(currentVote === "downvote"
+                                                    ? styles.voteActive
+                                                    : styles.voteInactive)
+                                            }}
                                             onClick={() => handleVote(comment, "downvote")}
                                         >
                                             👎 {comment.downvotes}
                                         </button>
+
+                                        <button
+                                            style={{ ...styles.actionButton, ...styles.replyButton }}
+                                            onClick={() => handleCommentReplyToggle(comment.id)}
+                                        >
+                                            Reply
+                                        </button>
+
                                         {isAuthor && (
                                             <>
-                                                <button style={{ ...styles.baseButton, ...styles.deleteButton }} onClick={() => onDelete(comment.id)}>Delete</button>
-                                                <button style={{ ...styles.baseButton, ...styles.editButton }} onClick={() => startEditing(comment)}>Edit</button>
+                                                <button
+                                                    style={{ ...styles.actionButton, ...styles.editButton }}
+                                                    onClick={() => startEditing(comment)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    style={{ ...styles.actionButton, ...styles.deleteButton }}
+                                                    onClick={() => setDeleteTarget(comment.id)}
+                                                >
+                                                    Delete
+                                                </button>
                                             </>
                                         )}
-
                                     </div>
                                 </>
                             )}
-                            <TestReplies threadId={threadId} commentId={comment.id} findUserById={findUserById} />
-                        </li>
+
+                            <TestReplies
+                                threadId={threadId}
+                                commentId={comment.id}
+                                findUserById={findUserById}
+                                commentReplyFormOpen={commentReplyFormOpen[comment.id]}
+                                onCommentReplyToggle={() => handleCommentReplyToggle(comment.id)}
+                            />
+                        </div>
                     );
                 })}
-            </ul>
+            </div>
+
+            {deleteTarget && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modalContent}>
+                        <h3 style={styles.modalTitle}>Delete Comment</h3>
+                        <p style={styles.modalText}>
+                            Are you sure you want to delete this comment? This action cannot be undone.
+                        </p>
+                        <div style={styles.modalButtons}>
+                            <button
+                                style={styles.modalCancelButton}
+                                onClick={() => setDeleteTarget(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                style={styles.modalDeleteButton}
+                                onClick={confirmDelete}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

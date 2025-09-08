@@ -143,7 +143,7 @@ const HomePage = () => {
                             </div>
                         ))}
                     </div>
-                    <Link to="/cars"  style={{
+                    <Link to="/cars" style={{
                         ...styles.seeMore,
                         color: hover ? "#0f2470" : "#4f46e5",
                         transition: "color 0.3s"
@@ -156,10 +156,11 @@ const HomePage = () => {
 
             {/* Car Comparison Section */}
             <section style={styles.carComparisonSection}>
-                <h1 style={{textAlign:"center"}}>Заинтересирани за спецификациите на одредено возило?</h1>
-                <p style={styles.specsPodnaslov}>Дојдовте на правилно место, овозможено ви е дури да направите и споредба меѓу две возила</p>
+                <h1 style={{textAlign: "center"}}>Заинтересирани за спецификациите на одредено возило?</h1>
+                <p style={styles.specsPodnaslov}>Дојдовте на правилно место, овозможено ви е дури да направите и
+                    споредба меѓу две возила</p>
                 <div style={styles.carComparisonContainer}>
-                    <CarSelector />
+                    <CarSelector/>
                 </div>
             </section>
 
@@ -345,9 +346,9 @@ const styles = {
         padding: "0 2rem"
     },
 
-    specsPodnaslov:{
-        fontSize:"1.15rem",
-        textAlign:"center"
+    specsPodnaslov: {
+        fontSize: "1.15rem",
+        textAlign: "center"
     }
 
 

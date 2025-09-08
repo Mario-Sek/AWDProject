@@ -28,7 +28,7 @@ const styles = {
     footer: {
         backgroundColor: "#1f1f1f", color: "white",
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "2rem 4rem", marginTop: "3rem", flexWrap: "wrap", gap: "1rem"
+        padding: "2rem 4rem", paddingTop:"22px", flexWrap: "wrap", gap: "1rem"
     },
     footerLink: {
         display: "block",
