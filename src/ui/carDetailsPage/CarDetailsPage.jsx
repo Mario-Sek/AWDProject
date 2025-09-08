@@ -38,7 +38,6 @@ const CarDetailsPage = () => {
 
     const [makes, setMakes] = useState([]);
 
-    // Load car and logs
     useEffect(() => {
         const foundCar = findById(id);
         setCar(foundCar || null);
@@ -47,7 +46,6 @@ const CarDetailsPage = () => {
             .sort((a, b) => new Date(a.date) - new Date(b.date));
         setLogs(sorted);
 
-        // Fetch makes for displaying name
         const fetchMakes = async () => {
             try {
                 const res = await fetch(`${VERCEL_BASE_URL}/api/makes`);
@@ -61,7 +59,6 @@ const CarDetailsPage = () => {
         fetchMakes();
     }, [id, cars, findById]);
 
-    // Derived calculations
     const { chartData, averageConsumption, consumptionByCondition, tableRows } =
         useMemo(() => {
             if (!logs || logs.length < 2) {
@@ -133,12 +130,10 @@ const CarDetailsPage = () => {
             };
         }, [logs]);
 
-    // Get the make name from API
     const makeName = car
         ? makes.find((m) => String(m.id) === String(car.make))?.name || car.make
         : "";
 
-    // Handlers
     const handleLogChange = (e) =>
         setNewLog((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -173,7 +168,6 @@ const CarDetailsPage = () => {
 
     return (
         <div style={{ maxWidth: "900px", margin: "2rem auto", fontFamily: "'Inter', sans-serif" }}>
-            {/* Car Info */}
             <div style={{ display: "flex", gap: "2rem", marginBottom: "2rem", flexWrap: "wrap" }}>
                 {car.image && (
                     <img
@@ -303,7 +297,7 @@ const CarDetailsPage = () => {
                 )}
             </div>
 
-            {/* Add Log Form */}
+
             <div style={{ marginTop: "2rem", background: "#fff", padding: "1rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
                 <h3>Add New Log</h3>
                 <div style={{ display: "grid", gap: "0.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
