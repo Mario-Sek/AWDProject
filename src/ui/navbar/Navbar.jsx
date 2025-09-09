@@ -1,14 +1,17 @@
 import {Link, useNavigate} from "react-router-dom";
 import {auth} from "../../config/firebase";
 import {useAuth} from "../../hooks/useAuth";
-import {useState} from "react";
-import logo from "../../images/logo-tp-novo.png"; // патека до логото
+import {useEffect, useState} from "react";
+import logo from "../../images/logo-tp-novo.png";
+import default_avatar from "../../images/default-avatar-icon.jpg"
+import useUsers from "../../hooks/useUsers";
 
 export default function Navbar() {
     const {user} = useAuth();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const [hoveredLink, setHoveredLink] = useState("")
+    const {users,refetch} = useUsers()
 
     const handleLogout = async () => {
         try {
@@ -19,16 +22,21 @@ export default function Navbar() {
         }
     };
 
+    useEffect(()=>{
+        if(user){
+            refetch()
+        }
+    },[users,refetch])
+
     return (
+
         <nav style={styles.navbar}>
-            {/* ЛОГО ЛЕВО */}
             <div style={styles.leftSection}>
                 <Link to="/">
                     <img src={logo} alt="logo" style={styles.logo}/>
                 </Link>
             </div>
 
-            {/* ЛИНКОВИ ДЕСНО */}
             <div style={styles.rightLinks}>
                 {user ? (
                     <>
@@ -70,8 +78,11 @@ export default function Navbar() {
                             onMouseLeave={() => setShowDropdown(false)}
                         >
                             <img
-                                src={user.photoURL || "/default-avatar-icon.jpg"}
-                                alt="pp"
+                                src={
+                                    users?.length > 0
+                                        ? users.find(u => u.uid === auth.currentUser?.uid)?.photoURL || default_avatar
+                                        : default_avatar
+                                }alt="pp"
                                 style={styles.avatar}
                             />
                             {showDropdown && (
@@ -108,6 +119,7 @@ const styles = {
     logo: {
         marginTop: "-3.8rem",
         marginBottom: "-3.8rem",
+        marginLeft:"-2rem",
         height: "auto",
         width: "16rem",
         cursor: "pointer"

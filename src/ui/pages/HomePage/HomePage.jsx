@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
-import useThreads from "../../hooks/useThreads";
-import useCars from "../../hooks/useCars";
-import useUsers from "../../hooks/useUsers";
-import hero from "../../images/hero-img.png"
-import discussion from "../../images/diskusija.jpg"
-import default_car from "../../images/default-car.png"
+import useThreads from "../../../hooks/useThreads";
+import useCars from "../../../hooks/useCars";
+import useUsers from "../../../hooks/useUsers";
+import hero from "../../../images/hero-img.png"
+import discussion from "../../../images/diskusija.jpg"
+import default_car from "../../../images/default-car.png"
 import "./HomePage.css"
-import CarSelector from "../carSpecs/CarSelector";
+import CarSelector from "../../carSpecs/CarSelector";
 
 const HomePage = () => {
     const {threads} = useThreads();
@@ -132,7 +132,7 @@ const HomePage = () => {
                                 />}
                                 <div style={styles.carCardText}>
                                     <Link to={`/cars/${car.id}`}><h3>{car.make} {car.model}</h3></Link>
-                                    <p> {car.fuel} {car.hp || "Nemam vneseno"} HP
+                                    <p> {car.fuel} {car.hp || "N/A"} HP
                                         <Link
                                             to={`/users/${car.userId}`}
                                             style={styles.carUsername}>

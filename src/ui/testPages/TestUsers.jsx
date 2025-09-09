@@ -3,11 +3,27 @@ import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
 import useUsers from "../../hooks/useUsers";
 import useCars from "../../hooks/useCars";
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../config/firebase";
+import default_avatar_icon from "../../images/default-avatar-icon.jpg"
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
 
+const initialForm = {
+    make: "",
+    model: "",
+    submodel: "",
+    trim: "",
+    year: "",
+    reg_plate: "",
+    fuel: "",
+    image: "",
+    preview: "",
+    hp: ""
+}
+
 const TestUsers = () => {
-    const {users, onUpdate} = useUsers();
+    const {users, onUpdate, refetch} = useUsers();
     const {cars, onAdd, onDelete} = useCars();
     const navigate = useNavigate();
 
@@ -21,16 +37,11 @@ const TestUsers = () => {
     const [submodels, setSubmodels] = useState([]);
     const [trims, setTrims] = useState([]);
     const [loadingMakes, setLoadingMakes] = useState(true);
-    const [formData, setFormData] = useState({
-        make: "",
-        model: "",
-        submodel: "",
-        trim: "",
-        year: "",
-        reg_plate: "",
-        fuel: "",
-        image: ""
-    });
+    const [formData, setFormData] = useState(initialForm);
+    const [profileImage, setProfileImage] = useState(currentUser?.photoURL || default_avatar_icon);
+    const [previewImage, setPreviewImage] = useState(currentUser?.photoURL || default_avatar_icon);
+    const [profileImagePreview, setProfileImagePreview] = useState(null);
+    const [newProfileFile, setNewProfileFile] = useState(null);
 
     // ----- Load current user -----
     useEffect(() => {
@@ -46,10 +57,10 @@ const TestUsers = () => {
                     username: firestoreUser.username || ""
                 });
             }
+            setProfileImage(firestoreUser.photoURL || default_avatar_icon);
         }
     }, [users]);
 
-    // ----- Load makes -----
     useEffect(() => {
         const loadMakes = async () => {
             try {
@@ -112,10 +123,20 @@ const TestUsers = () => {
     // ----- Handlers -----
     const handleProfileChange = (e) => setEditData({...editData, [e.target.name]: e.target.value});
 
-    const handleSaveProfile = () => {
-        if (!currentUser?.docId) return alert("Cannot update profile: Firestore document ID not found");
-        onUpdate(currentUser.docId, editData);
-        setCurrentUser({...currentUser, ...editData});
+    const handleSaveProfile = async () => {
+        const updatedData = {...editData};
+
+        if (newProfileFile) {
+            const imageRef = ref(storage, `users/${Date.now()}-${newProfileFile.name}`);
+            await uploadBytes(imageRef, newProfileFile);
+            const downloadURL = await getDownloadURL(imageRef);
+            updatedData.photoURL = downloadURL;
+        }
+
+        await onUpdate(currentUser.docId, updatedData);
+        setCurrentUser(prev => ({...prev, ...updatedData}));
+        setProfileImagePreview(null);
+        setNewProfileFile(null);
         setIsEditing(false);
     };
 
@@ -140,27 +161,45 @@ const TestUsers = () => {
         }
     };
 
-    const handleAddCar = () => {
-        if (!formData.make || !formData.model) {
-            alert("Please select at least make and model");
-            return;
+
+    const handleAddCar = async () => {
+        if (!formData.make || !formData.model || !formData.reg_plate) return;
+
+        let imageUrl = "";
+
+        if (formData.image instanceof File) {
+            const imageRef = ref(storage, `cars/${Date.now()}-${formData.image.name}`);
+            await uploadBytes(imageRef, formData.image);
+            imageUrl = await getDownloadURL(imageRef);
         }
-        onAdd({
+        const auth = getAuth();
+        await onAdd({
             ...formData,
-            userId: currentUser.uid,
+            image: imageUrl, //se cuva url, vo fb si vlece od toj storage
+            preview: "",
             createdAt: new Date(),
+            userId: auth.currentUser.uid
         });
-        setFormData({
-            make: "",
-            model: "",
-            submodel: "",
-            trim: "",
-            year: "",
-            reg_plate: "",
-            fuel: "",
-            image: ""
-        });
+
+        setFormData(initialForm);
     };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setFormData({...formData, image: file, preview: previewUrl})
+        }
+    }
+
+    const handleProfileImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setProfileImagePreview(URL.createObjectURL(file)); // за preview
+        setNewProfileFile(file); // за Save
+    };
+
 
     const userCars = cars.filter(c => c.userId === currentUser?.uid);
 
@@ -235,14 +274,25 @@ const TestUsers = () => {
                         height: "120px",
                         borderRadius: "50%",
                         border: "2px solid #ccc",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "bold",
-                        fontSize: "1rem",
-                        backgroundColor: "#f0f0f0"
-                    }}>Photo
+                        overflow: "hidden",
+                        cursor: isEditing ? "pointer" : "default"
+                    }}
+                         onClick={() => isEditing && document.getElementById("profileImageInput").click()}
+                    >
+                        <img
+                            src={profileImagePreview || currentUser.photoURL || default_avatar_icon}
+                            alt="User"
+                            style={{width: "100%", height: "100%", objectFit: "cover"}}
+                        />
                     </div>
+
+                    <input
+                        id="profileImageInput"
+                        type="file"
+                        accept="image/*"
+                        style={{display: "none"}}
+                        onChange={handleProfileImageChange}
+                    />
                     <div style={{flex: 1, display: "flex", flexDirection: "column", gap: "0.8rem"}}>
                         {isEditing ? (
                             <>
@@ -318,7 +368,7 @@ const TestUsers = () => {
                         onChange={(e) => handleCarChange("make", e.target.value)}>
                     <option value="">Select Make</option>
                     {loadingMakes ? <option>Loading...</option> : makes.map(make => (
-                        <option key={make.id} value={make.id}>{make.name}</option>
+                        <option key={make.id} value={make.name}>{make.name}</option>
                     ))}
                 </select>
 
@@ -350,6 +400,8 @@ const TestUsers = () => {
                        onChange={(e) => handleCarChange("year", e.target.value)} placeholder="Year"/>
                 <input style={styles.input} name="reg_plate" value={formData.reg_plate}
                        onChange={(e) => handleCarChange("reg_plate", e.target.value)} placeholder="Registration Plate"/>
+                <input style={styles.input} name="hp" value={formData.hp}
+                       onChange={(e) => handleCarChange("hp", e.target.value)} placeholder="Horsepower"/>
                 <select
                     style={styles.select}
                     value={formData.fuel}
@@ -362,13 +414,22 @@ const TestUsers = () => {
                     <option value="Electric">Electric</option>
                     <option value="LPG">LPG</option>
                 </select>
-                <input style={styles.input} name="image" value={formData.image}
-                       onChange={(e) => handleCarChange("image", e.target.value)} placeholder="Image URL (optional)"/>
-
+                <label>Image</label>
+                <input type="file"
+                       accept="image/*"
+                       onChange={handleImageChange}/>
+                {
+                    formData.preview && (
+                        <img
+                            src={profileImagePreview || currentUser.photoURL || default_avatar_icon}
+                            alt="preview"
+                            style={{maxWidth: "150px", marginTop: "0.5rem"}}/>
+                    )
+                }
                 <button style={styles.button} onClick={handleAddCar}>Add Car</button>
             </div>
 
-            {/* ===== User Cars + Logs ===== */}
+            {/* ===== User CarsPage + Logs ===== */}
             <h3>My Cars</h3>
             <div style={styles.carGrid}>
                 {userCars.map(car => {
