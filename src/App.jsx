@@ -3,6 +3,7 @@ import Navbar from "./ui/navbar/Navbar";
 import AuthForm from "./ui/authForm/AuthForm";
 import TestUsers from "./ui/testPages/TestUsers";
 import TestThreads from "./ui/testPages/TestThreads";
+import ThreadDetails from "./ui/testPages/ThreadDetails";
 import { useAuth } from "./hooks/useAuth";
 import CarSelector from "./ui/carSpecs/CarSelector";
 import Register from "./ui/registerForm/Register";
@@ -20,11 +21,10 @@ function App() {
     return (
         <Router>
             <Navbar />
-
             <Routes>
-                {/* Protected routes */}
                 <Route path="/user" element={user ? <TestUsers /> : <Navigate to="/login" />} />
                 <Route path="/threads" element={user ? <TestThreads /> : <Navigate to="/login" />} />
+                <Route path="/threads/:id" element={user ? <ThreadDetails /> : <Navigate to="/login" />} />
                 <Route path="/carspecs" element={user ? <CarSelector /> : <Navigate to="/login" />} />
                 <Route path="/cars" element={<CarsPage/>} />
                 <Route path="/cars/:id" element={user ? <CarDetailsPage /> : <Navigate to="/login" />} />
