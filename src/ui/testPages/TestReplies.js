@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import useReplies from "../../hooks/useReplies";
-import { useAuth } from "../../hooks/useAuth";
+import {useAuth} from "../../hooks/useAuth";
+import {useNavigate} from "react-router-dom";
 
 const TestReplies = ({
                          threadId,
@@ -12,16 +13,16 @@ const TestReplies = ({
                          commentReplyFormOpen = false,
                          onCommentReplyToggle = null
                      }) => {
-    const { user } = useAuth();
-    const { replies, onAdd, onDelete, onUpdate } = useReplies(threadId, commentId);
+    const {user} = useAuth();
+    const {replies, onAdd, onDelete, onUpdate} = useReplies(threadId, commentId);
     const [editingReplyId, setEditingReplyId] = useState(null);
-    const [editFormData, setEditFormData] = useState({ description: "", image: "" });
+    const [editFormData, setEditFormData] = useState({description: "", image: ""});
     const [replyFormOpen, setReplyFormOpen] = useState({});
     const [replyFormData, setReplyFormData] = useState({});
     const [deleteTarget, setDeleteTarget] = useState(null);
-
+    const navigate = useNavigate()
     const handleChange = (id, value) => {
-        setReplyFormData((prev) => ({ ...prev, [id]: value }));
+        setReplyFormData((prev) => ({...prev, [id]: value}));
     };
 
     const handleSubmit = (parentId = null) => {
@@ -40,8 +41,8 @@ const TestReplies = ({
             votedBy: {},
         });
 
-        setReplyFormOpen((prev) => ({ ...prev, [id]: false }));
-        setReplyFormData((prev) => ({ ...prev, [id]: { description: "", image: "" } }));
+        setReplyFormOpen((prev) => ({...prev, [id]: false}));
+        setReplyFormData((prev) => ({...prev, [id]: {description: "", image: ""}}));
     };
 
     const handleVote = (reply, type) => {
@@ -49,7 +50,7 @@ const TestReplies = ({
         const currentVote = reply.votedBy?.[user.uid] || null;
         let upvotes = reply.upvotes;
         let downvotes = reply.downvotes;
-        const votedBy = { ...(reply.votedBy || {}) };
+        const votedBy = {...(reply.votedBy || {})};
 
         if (currentVote === type) {
             if (type === "upvote") upvotes--;
@@ -63,22 +64,22 @@ const TestReplies = ({
             votedBy[user.uid] = type;
         }
 
-        onUpdate(reply.id, { ...reply, upvotes, downvotes, votedBy });
+        onUpdate(reply.id, {...reply, upvotes, downvotes, votedBy});
     };
 
     const startEditing = (reply) => {
         if (reply.userId !== user?.uid) return;
         setEditingReplyId(reply.id);
-        setEditFormData({ description: reply.description, image: reply.image || "" });
+        setEditFormData({description: reply.description, image: reply.image || ""});
     };
 
     const cancelEditing = () => {
         setEditingReplyId(null);
-        setEditFormData({ description: "", image: "" });
+        setEditFormData({description: "", image: ""});
     };
 
     const saveEdit = (replyId) => {
-        onUpdate(replyId, { description: editFormData.description, image: editFormData.image });
+        onUpdate(replyId, {description: editFormData.description, image: editFormData.image});
         cancelEditing();
     };
 
@@ -89,7 +90,7 @@ const TestReplies = ({
 
     const repliesWithUsers = replies
         .filter((r) => r.parentId === parentReplyId)
-        .map((r) => ({ ...r, user: findUserById(r.userId) }))
+        .map((r) => ({...r, user: findUserById(r.userId)}))
         .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     const styles = {
@@ -238,8 +239,8 @@ const TestReplies = ({
             color: "#4f46e5",
             border: "1px solid #4f46e5"
         },
-        voteActive: { opacity: 1 },
-        voteInactive: { opacity: 0.6 },
+        voteActive: {opacity: 1},
+        voteInactive: {opacity: 0.6},
         formButtons: {
             display: "flex",
             gap: "0.5rem",
@@ -311,11 +312,11 @@ const TestReplies = ({
                 <div style={styles.unifiedForm}>
                     <textarea
                         value={replyFormData.root?.description || ""}
-                        onChange={(e) => handleChange("root", { ...replyFormData.root, description: e.target.value })}
+                        onChange={(e) => handleChange("root", {...replyFormData.root, description: e.target.value})}
                         placeholder="Write your reply..."
                         style={styles.textarea}
                     />
-                    {replyFormData.root?.image && (
+                    {/*{replyFormData.root?.image && (
                         <img src={replyFormData.root.image} alt="Preview" style={styles.replyImage} />
                     )}
                     <input
@@ -329,10 +330,10 @@ const TestReplies = ({
                             }
                         }}
                         style={styles.input}
-                    />
+                    />*/}
                     <div style={styles.formButtons}>
                         <button
-                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                            style={{...styles.smallButton, ...styles.secondaryButton}}
                             onClick={onCommentReplyToggle}
                         >
                             Cancel
@@ -369,7 +370,10 @@ const TestReplies = ({
                                 <div style={styles.unifiedForm}>
                                     <textarea
                                         value={editFormData.description}
-                                        onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                                        onChange={(e) => setEditFormData({
+                                            ...editFormData,
+                                            description: e.target.value
+                                        })}
                                         style={styles.textarea}
                                     />
                                     <input
@@ -379,14 +383,14 @@ const TestReplies = ({
                                             const file = e.target.files[0];
                                             if (file) {
                                                 const blobUrl = URL.createObjectURL(file);
-                                                setEditFormData((prev) => ({ ...prev, image: blobUrl }));
+                                                setEditFormData((prev) => ({...prev, image: blobUrl}));
                                             }
                                         }}
                                         style={styles.input}
                                     />
                                     <div style={styles.formButtons}>
                                         <button
-                                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                                            style={{...styles.smallButton, ...styles.secondaryButton}}
                                             onClick={cancelEditing}
                                         >
                                             Cancel
@@ -402,7 +406,7 @@ const TestReplies = ({
                             ) : (
                                 <>
                                     <p style={styles.replyText}>{r.description}</p>
-                                    {r.image && <img src={r.image} alt="Reply" style={styles.replyImage} />}
+                                    {r.image && <img src={r.image} alt="Reply" style={styles.replyImage}/>}
 
                                     <div style={styles.buttonsContainer}>
                                         <button
@@ -427,22 +431,26 @@ const TestReplies = ({
                                         >
                                             👎 {r.downvotes}
                                         </button>
+
                                         <button
-                                            style={{ ...styles.actionButton, ...styles.replyToggleButton }}
-                                            onClick={() => setReplyFormOpen((prev) => ({ ...prev, [r.id]: !prev[r.id] }))}
+                                            style={{...styles.actionButton, ...styles.replyToggleButton}}
+                                            onClick={() => setReplyFormOpen((prev) => ({
+                                                ...prev,
+                                                [r.id]: !prev[r.id]
+                                            }))}
                                         >
                                             Reply
                                         </button>
                                         {isAuthor && (
                                             <>
                                                 <button
-                                                    style={{ ...styles.actionButton, ...styles.editButton }}
+                                                    style={{...styles.actionButton, ...styles.editButton}}
                                                     onClick={() => startEditing(r)}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
-                                                    style={{ ...styles.actionButton, ...styles.deleteButton }}
+                                                    style={{...styles.actionButton, ...styles.deleteButton}}
                                                     onClick={() => setDeleteTarget(r.id)}
                                                 >
                                                     Delete
@@ -455,12 +463,16 @@ const TestReplies = ({
                                         <div style={styles.unifiedForm}>
                                             <textarea
                                                 value={replyFormData[r.id]?.description || ""}
-                                                onChange={(e) => handleChange(r.id, { ...replyFormData[r.id], description: e.target.value })}
+                                                onChange={(e) => handleChange(r.id, {
+                                                    ...replyFormData[r.id],
+                                                    description: e.target.value
+                                                })}
                                                 placeholder="Write your reply..."
                                                 style={styles.textarea}
                                             />
                                             {replyFormData[r.id]?.image && (
-                                                <img src={replyFormData[r.id].image} alt="Preview" style={styles.replyImage} />
+                                                <img src={replyFormData[r.id].image} alt="Preview"
+                                                     style={styles.replyImage}/>
                                             )}
                                             <input
                                                 type="file"
@@ -469,15 +481,18 @@ const TestReplies = ({
                                                     const file = e.target.files[0];
                                                     if (file) {
                                                         const blobUrl = URL.createObjectURL(file);
-                                                        handleChange(r.id, { ...replyFormData[r.id], image: blobUrl });
+                                                        handleChange(r.id, {...replyFormData[r.id], image: blobUrl});
                                                     }
                                                 }}
                                                 style={styles.input}
                                             />
                                             <div style={styles.formButtons}>
                                                 <button
-                                                    style={{ ...styles.smallButton, ...styles.secondaryButton }}
-                                                    onClick={() => setReplyFormOpen((prev) => ({ ...prev, [r.id]: false }))}
+                                                    style={{...styles.smallButton, ...styles.secondaryButton}}
+                                                    onClick={() => setReplyFormOpen((prev) => ({
+                                                        ...prev,
+                                                        [r.id]: false
+                                                    }))}
                                                 >
                                                     Cancel
                                                 </button>

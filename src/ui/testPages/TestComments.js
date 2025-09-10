@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import useComments from "../../hooks/useComments";
 import TestReplies from "./TestReplies";
-import { useAuth } from "../../hooks/useAuth";
+import {useAuth} from "../../hooks/useAuth";
+import {useNavigate} from "react-router-dom";
 
 const initialFormData = {
     description: "",
@@ -11,13 +12,14 @@ const initialFormData = {
     image: null,
 };
 
-const TestComments = ({ threadId, findUserById }) => {
-    const { user } = useAuth();
-    const { comments, onAdd, onDelete, onUpdate } = useComments(threadId);
+const TestComments = ({threadId, findUserById}) => {
+    const {user} = useAuth();
+    const navigate = useNavigate()
+    const {comments, onAdd, onDelete, onUpdate} = useComments(threadId);
     const [formData, setFormData] = useState(initialFormData);
     const [showForm, setShowForm] = useState(false);
     const [editingCommentId, setEditingCommentId] = useState(null);
-    const [editFormData, setEditFormData] = useState({ description: "", image: "" });
+    const [editFormData, setEditFormData] = useState({description: "", image: ""});
     const [replyFormOpen, setReplyFormOpen] = useState({});
     const [replyFormData, setReplyFormData] = useState({});
     const [deleteTarget, setDeleteTarget] = useState(null);
@@ -25,8 +27,8 @@ const TestComments = ({ threadId, findUserById }) => {
     const [sortBy, setSortBy] = useState("newest"); // New state for sorting
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
     };
 
     const handleSubmit = () => {
@@ -50,7 +52,7 @@ const TestComments = ({ threadId, findUserById }) => {
         const currentVote = comment.votedBy?.[user.uid] || null;
         let upvotes = comment.upvotes;
         let downvotes = comment.downvotes;
-        const votedBy = { ...(comment.votedBy || {}) };
+        const votedBy = {...(comment.votedBy || {})};
 
         if (currentVote === type) {
             if (type === "upvote") upvotes -= 1;
@@ -64,23 +66,23 @@ const TestComments = ({ threadId, findUserById }) => {
             votedBy[user.uid] = type;
         }
 
-        const updatedComment = { ...comment, upvotes, downvotes, votedBy };
+        const updatedComment = {...comment, upvotes, downvotes, votedBy};
         onUpdate(comment.id, updatedComment);
     };
 
     const startEditing = (comment) => {
         if (comment.userId !== user?.uid) return;
         setEditingCommentId(comment.id);
-        setEditFormData({ description: comment.description, image: comment.image || "" });
+        setEditFormData({description: comment.description, image: comment.image || ""});
     };
 
     const cancelEditing = () => {
         setEditingCommentId(null);
-        setEditFormData({ description: "", image: "" });
+        setEditFormData({description: "", image: ""});
     };
 
     const saveEdit = (commentId) => {
-        onUpdate(commentId, { description: editFormData.description, image: editFormData.image });
+        onUpdate(commentId, {description: editFormData.description, image: editFormData.image});
         cancelEditing();
     };
 
@@ -95,16 +97,16 @@ const TestComments = ({ threadId, findUserById }) => {
         const data = replyFormData[commentId];
         if (!data?.description?.trim() || !user) return;
 
-        console.log("Reply submitted:", { commentId, data });
+        console.log("Reply submitted:", {commentId, data});
 
-        setReplyFormOpen((prev) => ({ ...prev, [commentId]: false }));
-        setReplyFormData((prev) => ({ ...prev, [commentId]: { description: "", image: "" } }));
+        setReplyFormOpen((prev) => ({...prev, [commentId]: false}));
+        setReplyFormData((prev) => ({...prev, [commentId]: {description: "", image: ""}}));
     };
 
     const handleReplyChange = (commentId, field, value) => {
         setReplyFormData((prev) => ({
             ...prev,
-            [commentId]: { ...prev[commentId], [field]: value }
+            [commentId]: {...prev[commentId], [field]: value}
         }));
     };
 
@@ -334,8 +336,8 @@ const TestComments = ({ threadId, findUserById }) => {
             color: "#4f46e5",
             border: "1px solid #4f46e5"
         },
-        voteActive: { opacity: 1 },
-        voteInactive: { opacity: 0.6 },
+        voteActive: {opacity: 1},
+        voteInactive: {opacity: 0.6},
         formButtons: {
             display: "flex",
             gap: "0.5rem",
@@ -420,13 +422,23 @@ const TestComments = ({ threadId, findUserById }) => {
                     </select>
                 </div>
 
+
                 {!showForm && (
-                    <button
-                        style={styles.toggleButton}
-                        onClick={() => setShowForm(true)}
-                    >
-                        Add Comment
-                    </button>
+
+                    user ?
+                        (< button
+                            style={styles.toggleButton}
+                            onClick={() => setShowForm(true)}
+                        >
+                            Add Comment
+                        </button>) :
+                        (< button
+                            style={styles.toggleButton}
+                            onClick={() => navigate('login/')}
+                        >
+                            Add Comment
+                        </button>)
+
                 )}
             </div>
 
@@ -446,14 +458,14 @@ const TestComments = ({ threadId, findUserById }) => {
                             const file = e.target.files[0];
                             if (file) {
                                 const blobUrl = URL.createObjectURL(file);
-                                setFormData((prev) => ({ ...prev, image: blobUrl }));
+                                setFormData((prev) => ({...prev, image: blobUrl}));
                             }
                         }}
                         style={styles.input}
                     />
                     <div style={styles.formButtons}>
                         <button
-                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                            style={{...styles.smallButton, ...styles.secondaryButton}}
                             onClick={() => setShowForm(false)}
                         >
                             Cancel
@@ -491,7 +503,7 @@ const TestComments = ({ threadId, findUserById }) => {
                                     <textarea
                                         value={editFormData.description}
                                         onChange={(e) =>
-                                            setEditFormData({ ...editFormData, description: e.target.value })
+                                            setEditFormData({...editFormData, description: e.target.value})
                                         }
                                         style={styles.textarea}
                                     />
@@ -502,14 +514,14 @@ const TestComments = ({ threadId, findUserById }) => {
                                             const file = e.target.files[0];
                                             if (file) {
                                                 const blobUrl = URL.createObjectURL(file);
-                                                setEditFormData((prev) => ({ ...prev, image: blobUrl }));
+                                                setEditFormData((prev) => ({...prev, image: blobUrl}));
                                             }
                                         }}
                                         style={styles.input}
                                     />
                                     <div style={styles.formButtons}>
                                         <button
-                                            style={{ ...styles.smallButton, ...styles.secondaryButton }}
+                                            style={{...styles.smallButton, ...styles.secondaryButton}}
                                             onClick={cancelEditing}
                                         >
                                             Cancel
@@ -526,7 +538,7 @@ const TestComments = ({ threadId, findUserById }) => {
                                 <>
                                     <p style={styles.commentText}>{comment.description}</p>
                                     {comment.image &&
-                                        <img src={comment.image} alt="Comment" style={styles.commentImage} />
+                                        <img src={comment.image} alt="Comment" style={styles.commentImage}/>
                                     }
 
                                     <div style={styles.buttonsContainer}>
@@ -558,8 +570,12 @@ const TestComments = ({ threadId, findUserById }) => {
                                         </button>
 
                                         <button
-                                            style={{ ...styles.actionButton, ...styles.replyButton }}
-                                            onClick={() => handleCommentReplyToggle(comment.id)}
+                                            style={{...styles.actionButton, ...styles.replyButton}}
+                                            onClick={() => {
+                                                if (!user) navigate("/login")
+                                                else
+                                                    handleCommentReplyToggle(comment.id)
+                                            }}
                                         >
                                             Reply
                                         </button>
@@ -567,13 +583,13 @@ const TestComments = ({ threadId, findUserById }) => {
                                         {isAuthor && (
                                             <>
                                                 <button
-                                                    style={{ ...styles.actionButton, ...styles.editButton }}
+                                                    style={{...styles.actionButton, ...styles.editButton}}
                                                     onClick={() => startEditing(comment)}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
-                                                    style={{ ...styles.actionButton, ...styles.deleteButton }}
+                                                    style={{...styles.actionButton, ...styles.deleteButton}}
                                                     onClick={() => setDeleteTarget(comment.id)}
                                                 >
                                                     Delete

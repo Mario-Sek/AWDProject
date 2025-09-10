@@ -405,7 +405,10 @@ const TestThreads = () => {
                         <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
                             <button
                                 style={styles.primaryButton}
-                                onClick={handleSubmit}
+                                onClick={()=>{
+                                    if (!currentUser) navigate('/login')
+                                    handleSubmit()
+                                }}
                             >
                                 Post Discussion
                             </button>

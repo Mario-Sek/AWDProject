@@ -16,7 +16,7 @@ export default function Navbar() {
     const handleLogout = async () => {
         try {
             await auth.signOut();
-            navigate("/login");
+            navigate("/");
         } catch (err) {
             console.error("Logout failed:", err);
         }
@@ -87,7 +87,7 @@ export default function Navbar() {
                             />
                             {showDropdown && (
                                 <div style={styles.dropdown}>
-                                    <Link to="/user" style={styles.dropdownLink}>My Profile</Link>
+                                    <Link to="/profile" style={styles.dropdownLink}>My Profile</Link>
                                     <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
                                 </div>
                             )}

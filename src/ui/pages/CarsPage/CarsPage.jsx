@@ -97,7 +97,7 @@ const CarsPage = () => {
 
 
     return (
-        <div style={{display: "flex", gap: "2rem", marginTop: "2rem", marginLeft: "3.5rem"}}>
+        <div style={{display: "flex", gap: "2rem", marginTop: "2rem", marginLeft: "3.5rem", marginBottom:"3rem"}}>
             {/* ===== Filters Panel ===== */}
             <div style={{
                 flex: "0 0 20%",
@@ -108,9 +108,9 @@ const CarsPage = () => {
                 backgroundColor: "rgba(236,236,231,0.47)",
                 borderRadius: "12px",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                height: "29rem",
+                height: "24rem",
             }}>
-                <h3 style={{marginBottom: "0.5rem", color: "#333"}}>Filters</h3>
+                <h3 style={{marginBottom: "1rem", color: "#333"}}>Filters</h3>
                 <select
                     value={makeFilter}
                     onChange={e => setMakeFilter(e.target.value)}
@@ -303,6 +303,8 @@ const CarsPage = () => {
                 ))}
                 {filteredCars.length === 0 && <p>No cars found for your criteria!</p>}
             </div>
+
+
         </div>
 
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
 import useUsers from "../../hooks/useUsers";
@@ -6,6 +6,10 @@ import useCars from "../../hooks/useCars";
 import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
 import {storage} from "../../config/firebase";
 import default_avatar_icon from "../../images/default-avatar-icon.jpg"
+import useThreads from "../../hooks/useThreads";
+import useComments from "../../hooks/useComments";
+import useReplies from "../../hooks/useReplies";
+import default_car from "../../images/default-car.png"
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
 
@@ -25,6 +29,7 @@ const initialForm = {
 const TestUsers = () => {
     const {users, onUpdate, refetch} = useUsers();
     const {cars, onAdd, onDelete} = useCars();
+    const {threads} = useThreads()
     const navigate = useNavigate();
 
     const [currentUser, setCurrentUser] = useState(null);
@@ -196,12 +201,24 @@ const TestUsers = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setProfileImagePreview(URL.createObjectURL(file)); // за preview
-        setNewProfileFile(file); // за Save
+        setProfileImagePreview(URL.createObjectURL(file)) // за preview
+        setNewProfileFile(file) // за Save
     };
 
 
-    const userCars = cars.filter(c => c.userId === currentUser?.uid);
+    const userCars = cars.filter(c => c.userId === currentUser?.uid)
+    //za threads
+    const userThreads = threads.filter(t=>t.userId === currentUser?.uid)
+    const activeThreads = threads.filter(thread =>
+        thread.userId !== currentUser?.uid &&
+        thread.comments?.some(c =>
+            c.userId === currentUser?.uid || c.replies?.some(r => r.userId === currentUser?.uid)
+        )
+    );
+
+
+    // threads--> comments --> replies
+
 
     const styles = {
         container: {maxWidth: "1000px", margin: "2rem auto", padding: "0 1rem", fontFamily: "'Inter', sans-serif"},
@@ -456,7 +473,7 @@ const TestUsers = () => {
                                 e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)";
                             }}
                         >
-                            {/* Car Image */}
+
                             {car.image ? (
                                 <img
                                     src={car.image}
@@ -464,7 +481,7 @@ const TestUsers = () => {
                                     style={{width: "100%", height: "180px", objectFit: "cover"}}
                                 />
                             ) : (
-                                <div
+                                /*<div
                                     style={{
                                         width: "100%",
                                         height: "180px",
@@ -476,9 +493,12 @@ const TestUsers = () => {
                                         fontSize: "1.2rem",
                                         fontWeight: "bold",
                                     }}
-                                >
-                                    No Image
-                                </div>
+                                >*/<img
+                                src={default_car}
+                                alt={`${makeName} ${car.model}`}
+                                style={{width: "100%", height: "180px", objectFit: "cover"}}
+                                />
+
                             )}
 
                             {/* Card Body */}
@@ -542,6 +562,33 @@ const TestUsers = () => {
                         </div>
                     );
                 })}
+            </div>
+            <h3 style={{marginTop: "2rem"}}>Threads Created by {currentUser.username}</h3>
+            <div style={styles.threadGrid}>
+                {userThreads.length === 0 ? (
+                    <p style={{color: "#555"}}>This user has not created any threads.</p>
+                ) : (
+                    userThreads.map(thread => (
+                        <div key={thread.id} style={styles.threadCard} onClick={() =>  navigate(`/threads/${thread.id}`)}>
+                            <h4 style={styles.threadTitle}>{thread.title}</h4>
+                            <p style={{color: "#666", fontSize: "0.9rem"}}>{thread.description.slice(0, 100)}...</p>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            <h3 style={{marginTop: "2rem"}}>Threads {currentUser.username} is Active In</h3>
+            <div style={styles.threadGrid}>
+                {activeThreads.length === 0 ? (
+                    <p style={{color: "#555"}}>This user is not active in any threads.</p>
+                ) : (
+                    activeThreads.map(thread => (
+                        <div key={thread.id} style={styles.threadCard} onClick={() =>  navigate(`/threads/${thread.id}`)}>
+                            <h4 style={styles.threadTitle}>{thread.title}</h4>
+                            <p style={{color: "#666", fontSize: "0.9rem"}}>{thread.description.slice(0, 100)}...</p>
+                        </div>
+                    ))
+                )}
             </div>
 
 

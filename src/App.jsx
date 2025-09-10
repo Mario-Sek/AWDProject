@@ -11,7 +11,8 @@ import CarDetailsPage from "./ui/carDetailsPage/CarDetailsPage";
 import CarEditPage from "./ui/carDetailsPage/CarEditPage";
 import HomePage from "./ui/pages/HomePage/HomePage";
 import Footer from "./ui/footer/Footer";
-import CarsPage from "./ui/pages/CarsPage/CarsPage"; // <-- create this page
+import CarsPage from "./ui/pages/CarsPage/CarsPage";
+import UserPage from "./ui/pages/UserPage/UserPage";
 
 function App() {
     const { user, loading } = useAuth();
@@ -22,13 +23,14 @@ function App() {
         <Router>
             <Navbar />
             <Routes>
-                <Route path="/user" element={user ? <TestUsers /> : <Navigate to="/login" />} />
-                <Route path="/threads" element={user ? <TestThreads /> : <Navigate to="/login" />} />
-                <Route path="/threads/:id" element={user ? <ThreadDetails /> : <Navigate to="/login" />} />
-                <Route path="/carspecs" element={user ? <CarSelector /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={user ? <TestUsers /> : <Navigate to="/login" />} />
+                <Route path="/users/:id" element={<UserPage/>}/>
+                <Route path="/threads" element={<TestThreads />} />
+                <Route path="/threads/:id" element={<ThreadDetails />} />
+                <Route path="/carspecs" element={<CarSelector />} />
                 <Route path="/cars" element={<CarsPage/>} />
-                <Route path="/cars/:id" element={user ? <CarDetailsPage /> : <Navigate to="/login" />} />
-                <Route path="/cars/:id/edit" element={user ? <CarEditPage /> : <Navigate to="/login" />} /> {/* <-- Added */}
+                <Route path="/cars/:id" element={<CarDetailsPage />} />
+                <Route path="/cars/:id/edit" element={user ? <CarEditPage /> : <Navigate to="/login" />} />
                 <Route path="/" element={<HomePage />} />
                 {/* Auth routes */}
                 <Route path="/login" element={!user ? <AuthForm mode="login" /> : <Navigate to="/user" />} />

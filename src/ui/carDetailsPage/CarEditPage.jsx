@@ -121,14 +121,14 @@ const CarEditPage = () => {
                 {yearOptions.map((year) => <option key={year} value={year}>{year}</option>)}
             </select>
 
-            <label style={labelStyle}>Plate:</label>
-            <input type="text" style={inputStyle} value={formData.reg_plate} onChange={(e) => handleChange("reg_plate", e.target.value)} placeholder="Plate" />
-
             <label style={labelStyle}>Fuel:</label>
             <select style={inputStyle} value={formData.fuel} onChange={(e) => handleChange("fuel", e.target.value)}>
                 <option value="">Select Fuel</option>
                 {fuelOptions.map((fuel) => <option key={fuel} value={fuel}>{fuel}</option>)}
             </select>
+
+            <label style={labelStyle}>Plate:</label>
+            <input type="text" style={inputStyle} value={formData.reg_plate} onChange={(e) => handleChange("reg_plate", e.target.value)} placeholder="Plate" />
 
             <label style={labelStyle}>Image URL:</label>
             <input type="text" style={inputStyle} value={formData.image} onChange={(e) => handleChange("image", e.target.value)} placeholder="Image URL" />

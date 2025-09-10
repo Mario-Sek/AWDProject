@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import useCars from "../../hooks/useCars";
 import {useAuth} from "../../hooks/useAuth";
 
@@ -14,6 +14,7 @@ import {
     ResponsiveContainer,
     ReferenceLine,
 } from "recharts";
+import useUsers from "../../hooks/useUsers";
 
 const conditionColors = {
     city: "#1d4ed8",
@@ -27,6 +28,7 @@ const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
 
 const CarDetailsPage = () => {
     const {id} = useParams();
+    const {users} = useUsers()
     const {user} = useAuth();
     const {cars, onUpdate, findById} = useCars();
     const [car, setCar] = useState(null);
@@ -65,7 +67,7 @@ const CarDetailsPage = () => {
     }, [id, cars, findById]);
 
 
-    const { chartData, averageConsumption, consumptionByCondition, tableRows } = useMemo(() => {
+    const {chartData, averageConsumption, consumptionByCondition, tableRows} = useMemo(() => {
         if (!logs || logs.length === 0) {
             return {
                 chartData: [],
@@ -77,7 +79,7 @@ const CarDetailsPage = () => {
 
         let totalLiters = 0;
         let totalKm = 0;
-        const condSums = Object.fromEntries(conditions.map(c => [c, { liters: 0, km: 0 }]));
+        const condSums = Object.fromEntries(conditions.map(c => [c, {liters: 0, km: 0}]));
 
         const chart = [];
         const rowsForTable = logs.map(l => {
@@ -85,7 +87,7 @@ const CarDetailsPage = () => {
             const distance = Number(l.km);
 
             if (!isFinite(distance) || distance <= 0 || !isFinite(liters) || liters <= 0) {
-                return { ...l, consumption: null };
+                return {...l, consumption: null};
             }
 
             const consumption = (liters / distance) * 100;
@@ -104,102 +106,25 @@ const CarDetailsPage = () => {
                 )
             });
 
-            return { ...l, consumption };
+            return {...l, consumption};
         });
 
         const overallAvg = totalKm > 0 ? (totalLiters / totalKm) * 100 : 0;
         const condAvg = Object.fromEntries(
             conditions.map(c => {
-                const { liters, km } = condSums[c];
+                const {liters, km} = condSums[c];
                 return [c, km > 0 ? (liters / km) * 100 : 0];
             })
         );
 
-        return { chartData: chart, averageConsumption: overallAvg, consumptionByCondition: condAvg, tableRows: rowsForTable };
+        return {
+            chartData: chart,
+            averageConsumption: overallAvg,
+            consumptionByCondition: condAvg,
+            tableRows: rowsForTable
+        };
     }, [logs]);
 
-
-    /*const {chartData, averageConsumption, consumptionByCondition, tableRows} =
-        useMemo(() => {
-            if (!logs || logs.length < 2) {
-                return {
-                    chartData: [],
-                    averageConsumption: 0,
-                    consumptionByCondition: Object.fromEntries(
-                        conditions.map((c) => [c, 0])
-                    ),
-                    tableRows: logs.map((l) => ({...l, consumption: null})),
-                };
-            }
-
-            const sorted = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
-            let totalLiters = 0;
-            let totalKm = 0;
-            const condSums = Object.fromEntries(
-                conditions.map((c) => [c, {liters: 0, km: 0}])
-            );
-
-            const chart = [];
-
-            const rowsForTable = sorted.map((l) => {
-                const liters = Number(l.liters);
-                const distance = Number(l.km);
-
-                if (!isFinite(distance) || distance <= 0 || !isFinite(liters) || liters <= 0) {
-                    return {...l, consumption: null};
-                }
-
-                const consumption = (liters / distance) * 100;
-                return {...l, consumption};
-            });
-
-            for (let i = 1; i < sorted.length; i++) {
-                const prev = sorted[i - 1];
-                const curr = sorted[i];
-
-                const distance = Number(curr.km) - Number(prev.km);
-                const liters = Number(curr.liters);
-
-                if (!isFinite(distance) || distance <= 0 || !isFinite(liters) || liters <= 0)
-                    continue;
-
-                const consumption = (liters / distance) * 100;
-                totalLiters += liters;
-                totalKm += distance;
-
-                if (condSums[curr.condition]) {
-                    condSums[curr.condition].liters += liters;
-                    condSums[curr.condition].km += distance;
-                }
-
-                rowsForTable[i].consumption = consumption;
-
-                chart.push({
-                    date: curr.date,
-                    ...Object.fromEntries(
-                        conditions.map((c) => [
-                            c,
-                            curr.condition === c ? consumption : null,
-                        ])
-                    ),
-                });
-            }
-
-            const overallAvg = totalKm > 0 ? (totalLiters / totalKm) * 100 : 0;
-            const condAvg = Object.fromEntries(
-                conditions.map((c) => {
-                    const {liters, km} = condSums[c];
-                    return [c, km > 0 ? (liters / km) * 100 : 0];
-                })
-            );
-
-            return {
-                chartData: chart,
-                averageConsumption: overallAvg,
-                consumptionByCondition: condAvg,
-                tableRows: rowsForTable,
-            };
-        }, [logs]);*/
 
     const makeName = car
         ? makes.find((m) => String(m.id) === String(car.make))?.name || car.make
@@ -252,6 +177,7 @@ const CarDetailsPage = () => {
                     <p><strong>Plate:</strong> {car.reg_plate}</p>
                     <p><strong>Fuel:</strong> {car.fuel}</p>
                     <p><strong>Horsepower: </strong> {car.hp} HP</p>
+                    <p><strong>Owner: </strong><Link to={`/users/${users?.find(u => u.uid === car.userId).uid}`}>{users?.find(u => u.uid === car.userId).username}</Link></p>
                     <div style={{
                         marginTop: "0.75rem",
                         display: "grid",
@@ -361,7 +287,7 @@ const CarDetailsPage = () => {
                             <th>A/C</th>
                             <th>Consumption</th>
                             <th>Date</th>
-                            {car.userId === user.uid ?
+                            {user && car.userId === user.uid ?
                                 <th>Action</th> : ""}
                         </tr>
                         </thead>
@@ -377,20 +303,20 @@ const CarDetailsPage = () => {
                                 <td>{log.consumption != null ? log.consumption.toFixed(2) : "-"}</td>
                                 <td>{log.date}</td>
                                 <td>
-                                    {car.userId === user.uid?
-                                    <button
-                                        onClick={() => handleDeleteLog(log._id)}
-                                        style={{
-                                            padding: "0.25rem 0.5rem",
-                                            borderRadius: "4px",
-                                            backgroundColor: "#ef4444",
-                                            color: "#fff",
-                                            border: "none",
-                                            cursor: "pointer"
-                                        }}
-                                    >
-                                        Delete
-                                    </button> : ""}
+                                    {user && car.userId === user.uid ?
+                                        <button
+                                            onClick={() => handleDeleteLog(log._id)}
+                                            style={{
+                                                padding: "0.25rem 0.5rem",
+                                                borderRadius: "4px",
+                                                backgroundColor: "#ef4444",
+                                                color: "#fff",
+                                                border: "none",
+                                                cursor: "pointer"
+                                            }}
+                                        >
+                                            Delete
+                                        </button> : ""}
                                 </td>
                             </tr>
                         ))}
@@ -400,60 +326,62 @@ const CarDetailsPage = () => {
             </div>
 
 
-            <div style={{
-                marginTop: "2rem",
-                background: "#fff",
-                padding: "1rem",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-            }}>
-                <h3>Add New Log</h3>
+            {user && car.userId === user.uid ?
                 <div style={{
-                    display: "grid",
-                    gap: "0.5rem",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))"
+                    marginTop: "2rem",
+                    background: "#fff",
+                    padding: "1rem",
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
                 }}>
-                    <input type="number" name="km_stand" placeholder="Current kilometers" value={newLog.km_stand}
-                           onChange={handleLogChange}/>
-                    <input type="number" name="liters" placeholder="Liters" value={newLog.liters}
-                           onChange={handleLogChange}/>
-                    <input type="number" name="km" placeholder="Distance driven" value={newLog.km}
-                           onChange={handleLogChange}/>
-                    <input type="number" name="price" placeholder="Price paid for fuel" value={newLog.price}
-                           onChange={handleLogChange}/>
-                    <select name="condition" value={newLog.condition} onChange={handleLogChange}>
-                        {conditions.map((c) => (
-                            <option key={c} value={c}>
-                                {c}
+                    <h3>Add New Log</h3>
+                    <div style={{
+                        display: "grid",
+                        gap: "0.5rem",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))"
+                    }}>
+                        <input type="number" name="km_stand" placeholder="Current kilometers" value={newLog.km_stand}
+                               onChange={handleLogChange}/>
+                        <input type="number" name="liters" placeholder="Liters" value={newLog.liters}
+                               onChange={handleLogChange}/>
+                        <input type="number" name="km" placeholder="Distance driven" value={newLog.km}
+                               onChange={handleLogChange}/>
+                        <input type="number" name="price" placeholder="Price paid for fuel" value={newLog.price}
+                               onChange={handleLogChange}/>
+                        <select name="condition" value={newLog.condition} onChange={handleLogChange}>
+                            {conditions.map((c) => (
+                                <option key={c} value={c}>
+                                    {c}
+                                </option>
+                            ))}
+                        </select>
+                        <input type="date" name="date" value={newLog.date} onChange={handleLogChange}/>
+                        <select name="ac" value={newLog.ac} onChange={handleLogChange}>
+                            <option value="true">
+                                A/C
                             </option>
-                        ))}
-                    </select>
-                    <input type="date" name="date" value={newLog.date} onChange={handleLogChange}/>
-                    <select name="ac" value={newLog.ac} onChange={handleLogChange}>
-                        <option value="true">
-                            A/C
-                        </option>
-                        <option value="false">
-                            No A/C
-                        </option>
-                    </select>
-                </div>
+                            <option value="false">
+                                No A/C
+                            </option>
+                        </select>
+                    </div>
 
-                {car.userId === user.uid ?<button
-                    onClick={handleAddLog}
-                    style={{
-                        marginTop: "1rem",
-                        padding: "0.5rem 1rem",
-                        backgroundColor: "#10b981",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer"
-                    }}
-                >
-                    Add Log
-                </button> : ""}
-            </div>
+                    <button
+                        onClick={handleAddLog}
+                        style={{
+                            marginTop: "1rem",
+                            padding: "0.5rem 1rem",
+                            backgroundColor: "#10b981",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Add Log
+                    </button>
+                </div>
+                : ""}
         </div>
     );
 };

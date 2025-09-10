@@ -16,7 +16,6 @@ const HomePage = () => {
 
     const [hover, setHover] = useState(false);
 
-    // Count-up state
     const [counts, setCounts] = useState({threads: 0, users: 0, cars: 0});
     const finalCounts = {
         threads: threads.length,
@@ -24,8 +23,9 @@ const HomePage = () => {
         cars: cars.length
     };
 
+    //za delot kaj diskusii, useri koli
     useEffect(() => {
-        const duration = 1500; // 1.5s animation
+        const duration = 1500;
         const steps = 30;
         let currentStep = 0;
         const interval = setInterval(() => {
@@ -43,12 +43,11 @@ const HomePage = () => {
     return (
         <div style={styles.page}>
 
-            {/* Hero Section */}
             <section style={styles.hero}>
                 <div style={styles.heroOverlay}>
                     <h1 style={styles.title}>Your Garage. Your Voice.</h1>
                     <p style={styles.subtitle}>
-                        Дискутирај, сподели искуства и спореди автомобили со заедницата.
+                        Discuss, share and compare with the community
                     </p>
                     <Link to="/threads" style={{
                         ...styles.ctaButton,
@@ -61,42 +60,39 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Statistics Section */}
             <section style={styles.statsSection}>
                 <div style={styles.statCard}>
                     <h2>{counts.threads}+</h2>
-                    <p>Дискусии</p>
+                    <p>Discussions</p>
                 </div>
                 <div style={styles.statCard}>
                     <h2>{counts.users}+</h2>
-                    <p>Членови</p>
+                    <p>Members</p>
                 </div>
                 <div style={styles.statCard}>
                     <h2>{counts.cars}+</h2>
-                    <p>Автомобили</p>
+                    <p>Cars</p>
                 </div>
             </section>
 
-            {/* Последни дискусии */}
             <section style={styles.section}>
                 <div style={styles.threadsContainer}>
-                    {/* Лева колона со текст */}
                     <div style={styles.threadsLeft}>
-                        <h3 style={styles.threadsTitle}>Влези во дискусија</h3>
+                        <h3 style={styles.threadsTitle}>Start a thread</h3>
                         <p style={styles.threadsSubtitle}>
-                            Сподели искуства со останатите членови или едноставно дознај нешто ново!
+                            Share experiences with the other members or simply learn something new!
                         </p>
                         <img src={discussion} alt="discussion" style={styles.threadsImage}/>
                     </div>
 
-                    {/* Десна колона со последните 3 дискусии */}
+
                     <div style={styles.threadsRight}>
-                        <h2 style={{textAlign: "center"}}>Последни дискусии</h2>
+                        <h2 style={{textAlign: "center"}}>Recently posted threads</h2>
                         {threads.slice(0, 3).map(thread => (
                             <div key={thread.id} style={styles.threadCard}>
                                 <h3>{thread.title}</h3>
-                                <p>{thread.description || "Краток опис..."}</p>
-                                <Link to={`/threads/${thread.id}`}>Види повеќе</Link>
+                                <p>{thread.description}</p>
+                                <Link to={`/threads/${thread.id}`}>Open thread</Link>
                             </div>
                         ))}
 
@@ -106,16 +102,16 @@ const HomePage = () => {
                             transition: "color 0.3s"
                         }}
                               onMouseEnter={() => setHover(true)}
-                              onMouseLeave={() => setHover(false)}>Погледни ги сите постови →</Link>
+                              onMouseLeave={() => setHover(false)}>Go to threads →</Link>
                     </div>
                 </div>
             </section>
 
-            {/* Популарни автомобили */}
             <section style={styles.section}>
                 <div style={styles.carContainer}>
-                    <h2 style={{textAlign: "center", marginTop: "-2rem", paddingTop: "2rem"}}>Некои од возилата на
-                        нашите корисници</h2>
+                    <h2 style={{textAlign: "center", marginTop: "-2rem", paddingTop: "2rem"}}>
+                        Some of our members cars and their logs
+                    </h2>
                     <div style={styles.carsList}>
                         {cars.slice(0, 5).map(car => (
                             <div key={car.id} style={styles.carCard}>
@@ -149,16 +145,20 @@ const HomePage = () => {
                         transition: "color 0.3s"
                     }}
                           onMouseEnter={() => setHover(true)}
-                          onMouseLeave={() => setHover(false)}>Погледни ги сите автомобили →</Link>
+                          onMouseLeave={() => setHover(false)}>See all cars →</Link>
 
                 </div>
             </section>
 
-            {/* Car Comparison Section */}
             <section style={styles.carComparisonSection}>
-                <h1 style={{textAlign: "center"}}>Заинтересирани за спецификациите на одредено возило?</h1>
+                <h1 style={{textAlign: "center"}}>
+                    Interested in the factory specifications of a vehicle?
+                </h1>
                 <p style={styles.specsPodnaslov}>Дојдовте на правилно место, овозможено ви е дури да направите и
-                    споредба меѓу две возила</p>
+                    споредба меѓу две возила
+                    You've come to the right place<br/>
+                    Check out our car comparison feature!
+                </p>
                 <div style={styles.carComparisonContainer}>
                     <CarSelector/>
                 </div>
@@ -206,8 +206,7 @@ const styles = {
         padding: "3rem 4rem",
     },
 
-    // STATISTICS
-    statsSection: {
+   statsSection: {
         display: "flex",
         justifyContent: "center",
         gap: "4rem",
@@ -219,10 +218,9 @@ const styles = {
         textAlign: "center"
     },
 
-    // THREADS (carousel)
     carousel: {
         display: "flex",
-        flexDirection: "column", // вертикално
+        flexDirection: "column",
         gap: "1rem",
         padding: "1rem 0"
     },
@@ -239,7 +237,7 @@ const styles = {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#fff", // или можеш да ставиш слика со backgroundImage
+        backgroundColor: "#fff",
         borderRadius: "10px",
         textAlign: "center",
         backgroundSize: "cover",
@@ -275,7 +273,7 @@ const styles = {
         marginBottom: "-7.2rem"
     },
 
-// CARS (horizontal card layout)
+
     carsList: {
         display: "flex",
         flexDirection: "column",
@@ -284,14 +282,14 @@ const styles = {
         marginBottom: "3rem",
         width: "100%",
         maxWidth: "50rem",
-        margin: "0 auto" // центрирано
+        margin: "0 auto"
     },
     carCard: {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
         padding: "0.8rem 0",
-        borderBottom: "1px solid #ccc", // линија меѓу автомобилите
+        borderBottom: "1px solid #ccc",
         cursor: "pointer",
         position: "relative"
     },
@@ -304,7 +302,7 @@ const styles = {
 
     seeMore: {
         display: "block",
-        margin: "1.5rem auto 0 auto", // горе, автоматски лево-десно
+        margin: "1.5rem auto 0 auto",
         textDecoration: "none",
         color: "#4f46e5",
         fontWeight: "600",
@@ -316,13 +314,13 @@ const styles = {
         height: "80px",
         objectFit: "cover",
         borderRadius: "8px",
-        marginRight: "0.8rem" // растојание помеѓу сликата и текстот
+        marginRight: "0.8rem"
     },
     carContainer: {
         backgroundColor: "#fff",
         paddingBottom: "3rem",
         width: "100%",
-        maxWidth: "900px", // поголем од картичките
+        maxWidth: "900px",
         margin: "0 auto",
         borderRadius: "10px"
     },
@@ -336,12 +334,12 @@ const styles = {
         fontWeight: "600"
     },
     carComparisonSection: {
-        backgroundColor: "#fff", // бела позадина од крај до крај
+        backgroundColor: "#fff",
         padding: "3rem 0",
         width: "100%"
     },
     carComparisonContainer: {
-        maxWidth: "1200px", // ограничување на ширина за да не е премногу широко
+        maxWidth: "1200px",
         margin: "0 auto",
         padding: "0 2rem"
     },
