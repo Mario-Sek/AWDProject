@@ -385,7 +385,7 @@ const TestUsers = () => {
                         onChange={(e) => handleCarChange("make", e.target.value)}>
                     <option value="">Select Make</option>
                     {loadingMakes ? <option>Loading...</option> : makes.map(make => (
-                        <option key={make.id} value={make.name}>{make.name}</option>
+                        <option key={make.id} value={make.id}>{make.name}</option>
                     ))}
                 </select>
 
@@ -438,7 +438,7 @@ const TestUsers = () => {
                 {
                     formData.preview && (
                         <img
-                            src={profileImagePreview || currentUser.photoURL || default_avatar_icon}
+                            src={formData.preview || default_car}
                             alt="preview"
                             style={{maxWidth: "150px", marginTop: "0.5rem"}}/>
                     )
