@@ -11,7 +11,7 @@ export default function Navbar() {
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const [hoveredLink, setHoveredLink] = useState("")
-    const {users,refetch} = useUsers()
+    const {users, refetch} = useUsers()
 
     const handleLogout = async () => {
         try {
@@ -22,11 +22,11 @@ export default function Navbar() {
         }
     };
 
-    useEffect(()=>{
-        if(user){
+    useEffect(() => {
+        if (user) {
             refetch()
         }
-    },[users,refetch])
+    }, [users, refetch])
 
     return (
 
@@ -38,40 +38,48 @@ export default function Navbar() {
             </div>
 
             <div style={styles.rightLinks}>
-                {user ? (
-                    <>
-                        <Link to="/" style={{
-                            ...styles.link,
-                            ...(hoveredLink === "/" ? styles.linkHover : {})
-                        }}
-                              onMouseEnter={() => setHoveredLink("/")}
-                              onMouseLeave={() => setHoveredLink("")}
-                        >Home</Link>
+                <Link to="/" style={{
+                    ...styles.link,
+                    ...(hoveredLink === "/" ? styles.linkHover : {})
+                }}
+                      onMouseEnter={() => setHoveredLink("/")}
+                      onMouseLeave={() => setHoveredLink("")}
+                >Home</Link>
 
-                        <Link to="/threads" style={{
+                {user ? (
+                    <Link
+                        to="/threads"
+                        style={{
                             ...styles.link,
                             ...(hoveredLink === "threads" ? styles.linkHover : {})
                         }}
-                              onMouseEnter={() => setHoveredLink("threads")}
-                              onMouseLeave={() => setHoveredLink("")}
-                        >Threads</Link>
+                        onMouseEnter={() => setHoveredLink("threads")}
+                        onMouseLeave={() => setHoveredLink("")}
+                    >
+                        Threads
+                    </Link>
+                ) : null}
 
-                        <Link to="/cars" style={{
-                            ...styles.link,
-                            ...(hoveredLink === "cars" ? styles.linkHover : {})
-                        }}
-                              onMouseEnter={() => setHoveredLink("cars")}
-                              onMouseLeave={() => setHoveredLink("")}
-                        >See All Cars</Link>
 
-                        <Link to="/carspecs" style={{
-                            ...styles.link,
-                            ...(hoveredLink === "carspecs" ? styles.linkHover : {})
-                        }}
-                              onMouseEnter={() => setHoveredLink("carspecs")}
-                              onMouseLeave={() => setHoveredLink("")}
-                        >Compare Cars</Link>
+                <Link to="/cars" style={{
+                    ...styles.link,
+                    ...(hoveredLink === "cars" ? styles.linkHover : {})
+                }}
+                      onMouseEnter={() => setHoveredLink("cars")}
+                      onMouseLeave={() => setHoveredLink("")}
+                >See All Cars</Link>
 
+                <Link to="/carspecs" style={{
+                    ...styles.link,
+                    ...(hoveredLink === "carspecs" ? styles.linkHover : {})
+                }}
+                      onMouseEnter={() => setHoveredLink("carspecs")}
+                      onMouseLeave={() => setHoveredLink("")}
+                >Compare Cars</Link>
+
+
+                {user ? (
+                    <>
                         <div
                             style={styles.profileWrapper}
                             onMouseEnter={() => setShowDropdown(true)}
@@ -82,7 +90,7 @@ export default function Navbar() {
                                     users?.length > 0
                                         ? users.find(u => u.uid === auth.currentUser?.uid)?.photoURL || default_avatar
                                         : default_avatar
-                                }alt="pp"
+                                } alt="pp"
                                 style={styles.avatar}
                             />
                             {showDropdown && (
@@ -94,7 +102,7 @@ export default function Navbar() {
                         </div>
                     </>
                 ) : (
-                    <div style={{ display: "flex", gap: "1rem" }}>
+                    <div style={{display: "flex", gap: "1rem"}}>
                         <Link to="/login" style={styles.loginButton}>Login</Link>
                         <Link to="/register" style={{
                             ...styles.loginButton,
@@ -127,7 +135,7 @@ const styles = {
     logo: {
         marginTop: "-3.8rem",
         marginBottom: "-3.8rem",
-        marginLeft:"-2rem",
+        marginLeft: "-2rem",
         height: "auto",
         width: "16rem",
         cursor: "pointer"

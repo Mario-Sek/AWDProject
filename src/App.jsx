@@ -24,9 +24,9 @@ function App() {
             <Navbar/>
             <Routes>
                 <Route path="/profile" element={user ? <TestUsers/> : <Navigate to="/login"/>}/>
-                <Route path="/users/:id" element={<UserPage/>}/>
-                <Route path="/threads" element={<TestThreads/>}/>
-                <Route path="/threads/:id" element={<ThreadDetails/>}/>
+                <Route path="/users/:id" element={user ? <UserPage/> : <Navigate to="/login"/>}/>
+                <Route path="/threads" element={user ? <TestThreads/> : <Navigate to="/login"/>}/>
+                <Route path="/threads/:id" element={user ? <ThreadDetails/> : <Navigate to="/login"/>}/>
                 <Route path="/carspecs" element={<CarSelector/>}/>
                 <Route path="/cars" element={<CarsPage/>}/>
                 <Route path="/cars/:id" element={<CarDetailsPage/>}/>
