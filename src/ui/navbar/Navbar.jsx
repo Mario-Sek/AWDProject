@@ -94,7 +94,15 @@ export default function Navbar() {
                         </div>
                     </>
                 ) : (
-                    <Link to="/login" style={styles.loginButton}>Login</Link>
+                    <div style={{ display: "flex", gap: "1rem" }}>
+                        <Link to="/login" style={styles.loginButton}>Login</Link>
+                        <Link to="/register" style={{
+                            ...styles.loginButton,
+                            backgroundColor: "#10b981" // green for register
+                        }}>
+                            Register
+                        </Link>
+                    </div>
                 )}
             </div>
         </nav>

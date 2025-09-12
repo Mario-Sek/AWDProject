@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, {useState, useEffect} from "react";
 import useThreads from "../../hooks/useThreads";
 import useUsers from "../../hooks/useUsers";
-import { getAuth } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import {getAuth} from "firebase/auth";
+import {useNavigate} from "react-router-dom";
 
 const initialFormData = {
     title: "",
@@ -14,8 +14,8 @@ const initialFormData = {
 };
 
 const TestThreads = () => {
-    const { threads, onAdd, onDelete, onUpdate } = useThreads();
-    const { findUserById } = useUsers();
+    const {threads, onAdd, onDelete, onUpdate} = useThreads();
+    const {findUserById} = useUsers();
     const [formData, setFormData] = useState(initialFormData);
     const [editingThreadId, setEditingThreadId] = useState(null);
     const [editFormData, setEditFormData] = useState({});
@@ -28,9 +28,17 @@ const TestThreads = () => {
     const auth = getAuth();
     const currentUser = auth.currentUser?.uid;
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const THREADS_PER_PAGE = 5;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter, searchTerm]);
+
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
     };
 
     const handleSubmit = () => {
@@ -56,7 +64,7 @@ const TestThreads = () => {
         const currentVote = thread.votedBy?.[currentUser] || null;
         let upvotes = thread.upvotes;
         let downvotes = thread.downvotes;
-        const votedBy = { ...(thread.votedBy || {}) };
+        const votedBy = {...(thread.votedBy || {})};
 
         if (currentVote === type) {
             if (type === "upvote") upvotes -= 1;
@@ -69,7 +77,7 @@ const TestThreads = () => {
             if (type === "downvote") downvotes += 1;
             votedBy[currentUser] = type;
         }
-        onUpdate(thread.id, { ...thread, upvotes, downvotes, votedBy });
+        onUpdate(thread.id, {...thread, upvotes, downvotes, votedBy});
     };
 
     const handleOpenThread = (threadId) => {
@@ -91,7 +99,7 @@ const TestThreads = () => {
     };
 
     const saveEdit = (threadId) => {
-        onUpdate(threadId, { ...editFormData });
+        onUpdate(threadId, {...editFormData});
         cancelEditing();
     };
 
@@ -111,6 +119,14 @@ const TestThreads = () => {
                 return dateB - dateA;
             }
         });
+
+    const totalPages = Math.ceil(filteredThreads.length / THREADS_PER_PAGE);
+
+    const paginatedThreads = filteredThreads.slice(
+        (currentPage - 1) * THREADS_PER_PAGE,
+        currentPage * THREADS_PER_PAGE
+    );
+
 
     const styles = {
         page: {
@@ -347,7 +363,7 @@ const TestThreads = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={styles.searchInput}
                         />
-                        <label style={{ fontSize: "1rem", fontWeight: "500", color: "#555" }}>
+                        <label style={{fontSize: "1rem", fontWeight: "500", color: "#555"}}>
                             Sort by:
                         </label>
                         <select
@@ -370,7 +386,7 @@ const TestThreads = () => {
                 {/* Post Thread Form */}
                 {showForm && (
                     <div style={styles.form}>
-                        <h3 style={{ margin: "0 0 1rem 0", color: "#333", fontSize: "1.3rem", fontWeight: "600" }}>
+                        <h3 style={{margin: "0 0 1rem 0", color: "#333", fontSize: "1.3rem", fontWeight: "600"}}>
                             Start a New Discussion
                         </h3>
                         <input
@@ -397,15 +413,15 @@ const TestThreads = () => {
                                 const file = e.target.files[0];
                                 if (file) {
                                     const blobUrl = URL.createObjectURL(file);
-                                    setFormData((prev) => ({ ...prev, image: blobUrl }));
+                                    setFormData((prev) => ({...prev, image: blobUrl}));
                                 }
                             }}
                             style={styles.input}
                         />
-                        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                        <div style={{display: "flex", gap: "1rem", justifyContent: "flex-end"}}>
                             <button
                                 style={styles.primaryButton}
-                                onClick={()=>{
+                                onClick={() => {
                                     if (!currentUser) navigate('/login')
                                     handleSubmit()
                                 }}
@@ -418,7 +434,7 @@ const TestThreads = () => {
 
                 {/* Threads List */}
                 <div>
-                    {filteredThreads.map((thread) => {
+                    {paginatedThreads.map((thread) => {
                         const threadUser = findUserById(thread.userId);
                         const currentVote = thread.votedBy?.[currentUser] || null;
                         const isEditing = editingThreadId === thread.id;
@@ -435,8 +451,8 @@ const TestThreads = () => {
                                         <input
                                             type="text"
                                             value={editFormData.title}
-                                            onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                                            style={{ ...styles.input, fontSize: "1.3rem", fontWeight: "600", flex: "1" }}
+                                            onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                                            style={{...styles.input, fontSize: "1.3rem", fontWeight: "600", flex: "1"}}
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                     ) : (
@@ -449,14 +465,20 @@ const TestThreads = () => {
                                                 <>
                                                     {/* FIXED: Using uniformButton base with exact same dimensions as vote buttons */}
                                                     <button
-                                                        style={{ ...styles.uniformButton, ...styles.editButton }}
-                                                        onClick={(e) => { e.stopPropagation(); startEditing(thread); }}
+                                                        style={{...styles.uniformButton, ...styles.editButton}}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            startEditing(thread);
+                                                        }}
                                                     >
                                                         Edit
                                                     </button>
                                                     <button
-                                                        style={{ ...styles.uniformButton, ...styles.deleteButton }}
-                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(thread.id); }}
+                                                        style={{...styles.uniformButton, ...styles.deleteButton}}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteTarget(thread.id);
+                                                        }}
                                                     >
                                                         Delete
                                                     </button>
@@ -465,15 +487,29 @@ const TestThreads = () => {
                                                 <>
 
                                                     <button
-                                                        style={{ ...styles.uniformButton, backgroundColor: "#6b7280", color: "white" }}
-                                                        onClick={(e) => { e.stopPropagation(); cancelEditing(); }}
+                                                        style={{
+                                                            ...styles.uniformButton,
+                                                            backgroundColor: "#6b7280",
+                                                            color: "white"
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            cancelEditing();
+                                                        }}
                                                     >
                                                         Cancel
                                                     </button>
 
                                                     <button
-                                                        style={{ ...styles.uniformButton, backgroundColor: "#10b981", color: "white" }}
-                                                        onClick={(e) => { e.stopPropagation(); saveEdit(thread.id); }}
+                                                        style={{
+                                                            ...styles.uniformButton,
+                                                            backgroundColor: "#10b981",
+                                                            color: "white"
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            saveEdit(thread.id);
+                                                        }}
                                                     >
                                                         Save
                                                     </button>
@@ -485,10 +521,14 @@ const TestThreads = () => {
                                 </div>
 
                                 {isEditing ? (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }} onClick={(e) => e.stopPropagation()}>
+                                    <div style={{display: "flex", flexDirection: "column", gap: "1rem"}}
+                                         onClick={(e) => e.stopPropagation()}>
                                         <textarea
                                             value={editFormData.description}
-                                            onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                                            onChange={(e) => setEditFormData({
+                                                ...editFormData,
+                                                description: e.target.value
+                                            })}
                                             style={styles.textarea}
                                         />
                                         <input
@@ -498,7 +538,7 @@ const TestThreads = () => {
                                                 const file = e.target.files[0];
                                                 if (file) {
                                                     const blobUrl = URL.createObjectURL(file);
-                                                    setEditFormData((prev) => ({ ...prev, image: blobUrl }));
+                                                    setEditFormData((prev) => ({...prev, image: blobUrl}));
                                                 }
                                             }}
                                             style={styles.input}
@@ -508,7 +548,7 @@ const TestThreads = () => {
                                     <>
                                         <p style={styles.threadDescription}>{thread.description}</p>
                                         {thread.image &&
-                                            <img src={thread.image} alt="Discussion" style={styles.threadImage} />
+                                            <img src={thread.image} alt="Discussion" style={styles.threadImage}/>
                                         }
                                     </>
                                 )}
@@ -529,7 +569,10 @@ const TestThreads = () => {
                                                 ...styles.upvoteButton,
                                                 ...(currentVote === "upvote" ? styles.voteActive : styles.voteInactive)
                                             }}
-                                            onClick={(e) => { e.stopPropagation(); handleVote(thread, "upvote"); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleVote(thread, "upvote");
+                                            }}
                                         >
                                             👍 {thread.upvotes}
                                         </button>
@@ -540,23 +583,49 @@ const TestThreads = () => {
                                                 ...styles.downvoteButton,
                                                 ...(currentVote === "downvote" ? styles.voteActive : styles.voteInactive)
                                             }}
-                                            onClick={(e) => { e.stopPropagation(); handleVote(thread, "downvote"); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleVote(thread, "downvote");
+                                            }}
                                         >
                                             👎 {thread.downvotes}
                                         </button>
                                     </div>
                                 )}
                             </div>
+
+
                         );
                     })}
+
+                    <div style={{display: "flex", justifyContent: "center", gap: "1rem", marginTop: "1rem"}}>
+                        <button
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                            style={styles.primaryButton}
+                        >
+                            Previous
+                        </button>
+                        <span style={{alignSelf: "center", fontWeight: "500"}}>
+        Page {currentPage} of {totalPages}
+    </span>
+                        <button
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            style={styles.primaryButton}
+                        >
+                            Next
+                        </button>
+                    </div>
+
                 </div>
 
                 {/* Delete Confirmation Modal */}
                 {deleteTarget && (
                     <div style={styles.modalOverlay}>
                         <div style={styles.modalBox}>
-                            <h3 style={{ margin: "0 0 1rem 0", color: "#333" }}>Delete Discussion</h3>
-                            <p style={{ margin: "0 0 1.5rem 0", color: "#666" }}>
+                            <h3 style={{margin: "0 0 1rem 0", color: "#333"}}>Delete Discussion</h3>
+                            <p style={{margin: "0 0 1.5rem 0", color: "#666"}}>
                                 Are you sure you want to delete this discussion? This action cannot be undone.
                             </p>
                             <div style={styles.modalButtons}>
@@ -567,7 +636,7 @@ const TestThreads = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    style={{ ...styles.primaryButton, backgroundColor: "#dc3545" }}
+                                    style={{...styles.primaryButton, backgroundColor: "#dc3545"}}
                                     onClick={() => {
                                         onDelete(deleteTarget);
                                         setDeleteTarget(null);
