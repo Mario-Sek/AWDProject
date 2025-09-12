@@ -46,19 +46,17 @@ export default function Navbar() {
                       onMouseLeave={() => setHoveredLink("")}
                 >Home</Link>
 
-                {user ? (
-                    <Link
-                        to="/threads"
-                        style={{
-                            ...styles.link,
-                            ...(hoveredLink === "threads" ? styles.linkHover : {})
-                        }}
-                        onMouseEnter={() => setHoveredLink("threads")}
-                        onMouseLeave={() => setHoveredLink("")}
-                    >
-                        Threads
-                    </Link>
-                ) : null}
+                <Link
+                    to="/threads"
+                    style={{
+                        ...styles.link,
+                        ...(hoveredLink === "threads" ? styles.linkHover : {})
+                    }}
+                    onMouseEnter={() => setHoveredLink("threads")}
+                    onMouseLeave={() => setHoveredLink("")}
+                >
+                    Threads
+                </Link>
 
 
                 <Link to="/cars" style={{
