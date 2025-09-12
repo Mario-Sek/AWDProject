@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
 import useUsers from "../../hooks/useUsers";
@@ -7,9 +7,10 @@ import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
 import {storage} from "../../config/firebase";
 import default_avatar_icon from "../../images/default-avatar-icon.jpg"
 import useThreads from "../../hooks/useThreads";
-import useComments from "../../hooks/useComments";
-import useReplies from "../../hooks/useReplies";
 import default_car from "../../images/default-car.png"
+import commentsRepository from "../../repository/subcollections/commentsRepository";
+import repliesRepository from "../../repository/subcollections/repliesRepository";
+
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
 
@@ -47,6 +48,8 @@ const TestUsers = () => {
     const [previewImage, setPreviewImage] = useState(currentUser?.photoURL || default_avatar_icon);
     const [profileImagePreview, setProfileImagePreview] = useState(null);
     const [newProfileFile, setNewProfileFile] = useState(null);
+
+    const [contributedThreads, setContributedThreads] = useState([]);
 
     // ----- Load current user -----
     useEffect(() => {
@@ -208,13 +211,47 @@ const TestUsers = () => {
 
     const userCars = cars.filter(c => c.userId === currentUser?.uid)
     //za threads
-    const userThreads = threads.filter(t=>t.userId === currentUser?.uid)
-    const activeThreads = threads.filter(thread =>
-        thread.userId !== currentUser?.uid &&
-        thread.comments?.some(c =>
-            c.userId === currentUser?.uid || c.replies?.some(r => r.userId === currentUser?.uid)
-        )
-    );
+    const userThreads = threads.filter(t => t.userId === currentUser?.uid)
+    ;
+
+    useEffect(() => {
+        const fetchContributions = async () => {
+            if (!threads.length || !currentUser) return;
+
+            const result = [];
+
+            for (const thread of threads) {
+                if (thread.userId === currentUser.uid) continue; // skip own threads
+
+                // fetch comments
+                const comments = await commentsRepository.findAllOnce(thread.id);
+                let userContributed = false;
+
+                for (const comment of comments) {
+                    if (comment.userId === currentUser.uid) {
+                        userContributed = true;
+                        break;
+                    }
+
+                    // fetch replies for this comment
+                    const replies = await repliesRepository.findAllOnce(thread.id, comment.id);
+                    if (replies.some(r => {
+                        // adjust this depending on your reply object
+                        return r.userId === currentUser.uid || r.user?.userId === currentUser.uid;
+                    })) {
+                        userContributed = true;
+                        break;
+                    }
+                }
+
+                if (userContributed) result.push(thread);
+            }
+
+            setContributedThreads(result);
+        };
+
+        fetchContributions();
+    }, [threads, currentUser]);
 
 
     // threads--> comments --> replies
@@ -494,9 +531,9 @@ const TestUsers = () => {
                                         fontWeight: "bold",
                                     }}
                                 >*/<img
-                                src={default_car}
-                                alt={`${makeName} ${car.model}`}
-                                style={{width: "100%", height: "180px", objectFit: "cover"}}
+                                    src={default_car}
+                                    alt={`${makeName} ${car.model}`}
+                                    style={{width: "100%", height: "180px", objectFit: "cover"}}
                                 />
 
                             )}
@@ -565,27 +602,55 @@ const TestUsers = () => {
             </div>
             <h3 style={{marginTop: "2rem"}}>Threads Created by {currentUser.username}</h3>
             <div style={styles.threadGrid}>
-                {userThreads.length === 0 ? (
+                {threads.filter(t => t.userId === currentUser.uid).length === 0 ? (
                     <p style={{color: "#555"}}>This user has not created any threads.</p>
                 ) : (
-                    userThreads.map(thread => (
-                        <div key={thread.id} style={styles.threadCard} onClick={() =>  navigate(`/threads/${thread.id}`)}>
-                            <h4 style={styles.threadTitle}>{thread.title}</h4>
-                            <p style={{color: "#666", fontSize: "0.9rem"}}>{thread.description.slice(0, 100)}...</p>
-                        </div>
-                    ))
+                    threads
+                        .filter(t => t.userId === currentUser.uid)
+                        .map(thread => (
+                            <div
+                                key={thread.id}
+                                style={{
+                                    padding: "1rem",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    marginBottom: "1rem",
+                                    cursor: "pointer",
+                                    background: "#fff"
+                                }}
+                                onClick={() => navigate(`/threads/${thread.id}`)}
+                            >
+                                <h4 style={{marginBottom: "0.5rem"}}>{thread.title}</h4>
+                                <p style={{color: "#666", fontSize: "0.9rem"}}>
+                                    {thread.description.slice(0, 100)}...
+                                </p>
+                            </div>
+                        ))
                 )}
             </div>
 
-            <h3 style={{marginTop: "2rem"}}>Threads {currentUser.username} is Active In</h3>
+            <h3 style={{marginTop: "2rem"}}>Threads {currentUser.username} Contributed To</h3>
             <div style={styles.threadGrid}>
-                {activeThreads.length === 0 ? (
-                    <p style={{color: "#555"}}>This user is not active in any threads.</p>
+                {contributedThreads.length === 0 ? (
+                    <p style={{color: "#555"}}>You have not contributed to any threads.</p>
                 ) : (
-                    activeThreads.map(thread => (
-                        <div key={thread.id} style={styles.threadCard} onClick={() =>  navigate(`/threads/${thread.id}`)}>
-                            <h4 style={styles.threadTitle}>{thread.title}</h4>
-                            <p style={{color: "#666", fontSize: "0.9rem"}}>{thread.description.slice(0, 100)}...</p>
+                    contributedThreads.map(thread => (
+                        <div
+                            key={thread.id}
+                            style={{
+                                padding: "1rem",
+                                border: "1px solid #ddd",
+                                borderRadius: "8px",
+                                marginBottom: "1rem",
+                                cursor: "pointer",
+                                background: "#fff"
+                            }}
+                            onClick={() => navigate(`/threads/${thread.id}`)}
+                        >
+                            <h4 style={{marginBottom: "0.5rem"}}>{thread.title}</h4>
+                            <p style={{color: "#666", fontSize: "0.9rem"}}>
+                                {thread.description.slice(0, 100)}...
+                            </p>
                         </div>
                     ))
                 )}
