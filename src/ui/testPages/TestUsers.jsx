@@ -10,6 +10,7 @@ import useThreads from "../../hooks/useThreads";
 import default_car from "../../images/default-car.png"
 import commentsRepository from "../../repository/subcollections/commentsRepository";
 import repliesRepository from "../../repository/subcollections/repliesRepository";
+import {AnimatePresence, motion} from "framer-motion";
 
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
@@ -348,24 +349,40 @@ const TestUsers = () => {
                         onChange={handleProfileImageChange}
                     />
                     <div style={{flex: 1, display: "flex", flexDirection: "column", gap: "0.8rem"}}>
-                        {isEditing ? (
-                            <>
-                                <input name="name" value={editData.name} onChange={handleProfileChange}
-                                       placeholder="Name" style={styles.input}/>
-                                <input name="surname" value={editData.surname} onChange={handleProfileChange}
-                                       placeholder="Surname" style={styles.input}/>
-                                <input name="username" value={editData.username} onChange={handleProfileChange}
-                                       placeholder="Username" style={styles.input}/>
-                            </>
-                        ) : (
-                            <>
-                                <div style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: 'bold'
-                                }}>{currentUser.name} {currentUser.surname}</div>
-                                <div style={{color: '#555'}}>Username: {currentUser.username}</div>
-                            </>
-                        )}
+                        <AnimatePresence mode="wait">
+                            {isEditing ? (
+                                <motion.div
+                                    key="edit"
+                                    initial={{opacity: 0, y: -10}}
+                                    animate={{opacity: 1, y: 0}}
+                                    exit={{opacity: 0, y: 10}}
+                                    transition={{duration: 0.3}}
+                                    style={{display: "flex", flexDirection: "column", gap: "0.8rem"}}
+                                >
+                                    <input name="name" value={editData.name} onChange={handleProfileChange}
+                                           placeholder="Name" style={styles.input}/>
+                                    <input name="surname" value={editData.surname} onChange={handleProfileChange}
+                                           placeholder="Surname" style={styles.input}/>
+                                    <input name="username" value={editData.username} onChange={handleProfileChange}
+                                           placeholder="Username" style={styles.input}/>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="view"
+                                    initial={{opacity: 0, y: 10}}
+                                    animate={{opacity: 1, y: 0}}
+                                    exit={{opacity: 0, y: -10}}
+                                    transition={{duration: 0.3}}
+                                    style={{display: "flex", flexDirection: "column", gap: "0.4rem"}}
+                                >
+                                    <div style={{
+                                        fontSize: '1.1rem',
+                                        fontWeight: 'bold'
+                                    }}>{currentUser.name} {currentUser.surname}</div>
+                                    <div style={{color: '#555'}}>Username: {currentUser.username}</div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                         <div style={{color: '#555'}}>Email: {currentUser.email}</div>
                         <div style={{color: '#555'}}>Points: {currentUser.points || 0}</div>
 
