@@ -74,10 +74,10 @@ const Register = () => {
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                        setProfilePicture(e.target.files[0]);
-                        setProfilePreview(URL.createObjectURL(e.target.files[0]));
+                        setProfilePicture(e.target.files);
+                        setProfilePreview(URL.createObjectURL(e.target.files));
                     }}
-                    style={styles.fileInput}
+                    style={styles.input}
                 />
                 {profilePreview && (
                     <div style={styles.previewWrapper}>
@@ -125,9 +125,6 @@ const styles = {
         fontSize: "16px",
         outline: "none",
         transition: "border-color 0.2s",
-    },
-    fileInput: {
-        padding: "0.5rem 0",
     },
     previewWrapper: {
         display: "flex",

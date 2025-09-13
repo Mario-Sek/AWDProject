@@ -7,7 +7,7 @@ const Footer = () => {
             <footer style={styles.footer}>
                 <div>
                     <h3>GearTalk</h3>
-                    <p>Форум за автомобилски ентузијасти</p>
+                    <p>Forum for automotive enthusiasts</p>
                 </div>
                 <div>
                     <Link to="/" style={styles.footerLink}>Home</Link>
@@ -16,7 +16,7 @@ const Footer = () => {
                     <Link to="/carspecs" style={styles.footerLink}>Compare</Link>
                 </div>
                 <div>
-                    <p>Заследете не:</p>
+                    <p>Follow us:</p>
                     <a href="#">Facebook</a> | <a href="#">Instagram</a> | <a href="#">Twitter</a>
                 </div>
             </footer>

@@ -56,7 +56,7 @@ const HomePage = () => {
                         transition: "color 0.3s, background-color 0.3s",
                     }}
                           onMouseEnter={() => setHover(true)}
-                          onMouseLeave={() => setHover(false)}>Види Threads</Link>
+                          onMouseLeave={() => setHover(false)}>View Threads</Link>
                 </div>
             </section>
 
@@ -154,9 +154,7 @@ const HomePage = () => {
                 <h1 style={{textAlign: "center"}}>
                     Interested in the factory specifications of a vehicle?
                 </h1>
-                <p style={styles.specsPodnaslov}>Дојдовте на правилно место, овозможено ви е дури да направите и
-                    споредба меѓу две возила
-                    You've come to the right place<br/>
+                <p style={styles.specsPodnaslov}>You've come to the right place, you can even make a comparison between two vehicles<br/>
                     Check out our car comparison feature!
                 </p>
                 <div style={styles.carComparisonContainer}>
@@ -206,7 +204,7 @@ const styles = {
         padding: "3rem 4rem",
     },
 
-   statsSection: {
+    statsSection: {
         display: "flex",
         justifyContent: "center",
         gap: "4rem",

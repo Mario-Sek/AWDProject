@@ -312,13 +312,17 @@ const TestReplies = ({
                 <div style={styles.unifiedForm}>
                     <textarea
                         value={replyFormData.root?.description || ""}
-                        onChange={(e) => handleChange("root", {...replyFormData.root, description: e.target.value})}
+                        onChange={(e) =>
+                            handleChange("root", { ...replyFormData.root, description: e.target.value })
+                        }
                         placeholder="Write your reply..."
                         style={styles.textarea}
                     />
-                    {/*{replyFormData.root?.image && (
+
+                    {replyFormData.root?.image && (
                         <img src={replyFormData.root.image} alt="Preview" style={styles.replyImage} />
                     )}
+
                     <input
                         type="file"
                         accept="image/*"
@@ -330,7 +334,8 @@ const TestReplies = ({
                             }
                         }}
                         style={styles.input}
-                    />*/}
+                    />
+
                     <div style={styles.formButtons}>
                         <button
                             style={{...styles.smallButton, ...styles.secondaryButton}}

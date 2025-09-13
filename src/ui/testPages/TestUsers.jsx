@@ -10,6 +10,7 @@ import useThreads from "../../hooks/useThreads";
 import default_car from "../../images/default-car.png"
 import commentsRepository from "../../repository/subcollections/commentsRepository";
 import repliesRepository from "../../repository/subcollections/repliesRepository";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
@@ -169,7 +170,6 @@ const TestUsers = () => {
         }
     };
 
-
     const handleAddCar = async () => {
         if (!formData.make || !formData.model || !formData.reg_plate) return;
 
@@ -208,11 +208,9 @@ const TestUsers = () => {
         setNewProfileFile(file) // за Save
     };
 
-
     const userCars = cars.filter(c => c.userId === currentUser?.uid)
     //za threads
-    const userThreads = threads.filter(t => t.userId === currentUser?.uid)
-    ;
+    const userThreads = threads.filter(t => t.userId === currentUser?.uid);
 
     useEffect(() => {
         const fetchContributions = async () => {
@@ -253,83 +251,117 @@ const TestUsers = () => {
         fetchContributions();
     }, [threads, currentUser]);
 
-
-    // threads--> comments --> replies
-
-
-    const styles = {
-        container: {maxWidth: "1000px", margin: "2rem auto", padding: "0 1rem", fontFamily: "'Inter', sans-serif"},
-        profileCard: {
-            padding: "2rem",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            marginBottom: "2rem",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-        },
-        input: {
-            padding: "0.6rem",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-            width: "100%",
-            marginBottom: "0.75rem"
-        },
-        select: {
-            padding: "0.6rem",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-            width: "100%",
-            marginBottom: "0.75rem"
-        },
-        button: {
-            padding: "0.6rem 1.2rem",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: "#1d4ed8",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: "600"
-        },
-        carGrid: {display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem"},
-        card: {
-            background: "#fff",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-            overflow: "hidden",
-            cursor: "pointer",
-            position: "relative"
-        },
-        cardImage: {width: "100%", height: "160px", objectFit: "cover"},
-        cardBody: {padding: "1rem"},
-        carTitle: {fontWeight: "600", fontSize: "1.1rem", marginBottom: "0.25rem"},
-        carInfo: {fontSize: "0.9rem", color: "#555", marginBottom: "0.5rem"},
-        deleteButton: {
-            padding: "0.3rem 0.6rem",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: "#ef4444",
-            color: "#fff",
-            cursor: "pointer",
-            marginTop: "0.5rem"
-        }
+    // --- Input/Select base style ---
+    const inputStyle = {
+        width: "100%",
+        padding: "0.875rem 1rem",
+        border: "2px solid #e5e7eb",
+        borderRadius: "10px",
+        fontSize: "1rem",
+        transition: "all 0.2s ease",
+        boxSizing: "border-box",
+        backgroundColor: "#fafbfc",
+        outline: "none",
+        marginBottom: "1.25rem"
     };
 
+    const handleInputFocus = (e) => {
+        e.target.style.borderColor = "#3b82f6";
+        e.target.style.backgroundColor = "white";
+        e.target.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.1)";
+    };
+
+    const handleInputBlur = (e) => {
+        e.target.style.borderColor = "#e5e7eb";
+        e.target.style.backgroundColor = "#fafbfc";
+        e.target.style.boxShadow = "none";
+    };
+
+    const buttonStyle = {
+        padding: "0.6rem 1.2rem",
+        backgroundColor: "rgb(79, 70, 229)",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        fontWeight: "600",
+        cursor: "pointer",
+        fontSize: "1rem",
+        transition: "background-color 0.3s"
+    };
+
+    const labelStyle = {
+        fontSize: "0.85rem",
+        fontWeight: "600",
+        color: "#374151", // dark gray
+        marginBottom: "0.25rem",
+    };
+
+
     if (!currentUser) {
-        return <div style={{padding: "2rem", fontSize: "1.2rem"}}>Loading profile...</div>;
+        return (
+            <div style={{
+                maxWidth: "1200px",
+                margin: "0 auto",
+                padding: "1.5rem 1rem",
+                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                backgroundColor: "#fafafa",
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
+                <div style={{
+                    padding: "2rem",
+                    backgroundColor: "white",
+                    borderRadius: "16px",
+                    boxShadow: "0 8px 12px -2px rgba(0, 0, 0, 0.08)",
+                    fontSize: "1.2rem",
+                    color: "#374151"
+                }}>
+                    Loading profile...
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div style={styles.container}>
+        <div style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "1.5rem 1rem",
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            backgroundColor: "#fafafa",
+            minHeight: "100vh"
+        }}>
             {/* ===== Profile Section ===== */}
-            <div style={styles.profileCard}>
-                <h2 style={{textAlign: "center", marginBottom: "1.5rem", color: "#333"}}>My Profile</h2>
-                <div style={{display: "flex", gap: "1.5rem"}}>
+            <div style={{
+                padding: "2rem",
+                backgroundColor: "white",
+                borderRadius: "16px",
+                boxShadow: "0 8px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 5px -1px rgba(0, 0, 0, 0.04)",
+                border: "1px solid #f1f5f9",
+                marginBottom: "2rem"
+            }}>
+                <h2 style={{
+                    textAlign: "center",
+                    marginBottom: "2rem",
+                    fontSize: "1.75rem",
+                    fontWeight: "700",
+                    color: "#1f2937"
+                }}>
+                    My Profile
+                </h2>
+
+                <div style={{display: "flex", gap: "2rem", alignItems: "flex-start"}}>
                     <div style={{
                         width: "120px",
                         height: "120px",
                         borderRadius: "50%",
-                        border: "2px solid #ccc",
+                        border: "3px solid #e5e7eb",
                         overflow: "hidden",
-                        cursor: isEditing ? "pointer" : "default"
+                        cursor: isEditing ? "pointer" : "default",
+                        flexShrink: 0,
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
                     }}
                          onClick={() => isEditing && document.getElementById("profileImageInput").click()}
                     >
@@ -347,39 +379,117 @@ const TestUsers = () => {
                         style={{display: "none"}}
                         onChange={handleProfileImageChange}
                     />
-                    <div style={{flex: 1, display: "flex", flexDirection: "column", gap: "0.8rem"}}>
-                        {isEditing ? (
-                            <>
-                                <input name="name" value={editData.name} onChange={handleProfileChange}
-                                       placeholder="Name" style={styles.input}/>
-                                <input name="surname" value={editData.surname} onChange={handleProfileChange}
-                                       placeholder="Surname" style={styles.input}/>
-                                <input name="username" value={editData.username} onChange={handleProfileChange}
-                                       placeholder="Username" style={styles.input}/>
-                            </>
-                        ) : (
-                            <>
-                                <div style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: 'bold'
-                                }}>{currentUser.name} {currentUser.surname}</div>
-                                <div style={{color: '#555'}}>Username: {currentUser.username}</div>
-                            </>
-                        )}
-                        <div style={{color: '#555'}}>Email: {currentUser.email}</div>
-                        <div style={{color: '#555'}}>Points: {currentUser.points || 0}</div>
 
-                        <div style={{marginTop: '1rem', display: 'flex', gap: '0.5rem'}}>
-                            <button onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)} style={{
-                                padding: '0.6rem 1.2rem',
-                                border: 'none',
-                                borderRadius: '4px',
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontWeight: 'bold'
+                    <div style={{flex: 1, display: "flex", flexDirection: "column", gap: "1.25rem"}}>
+                        <AnimatePresence mode="wait">
+                            {isEditing ? (
+                                <motion.div
+                                    key="edit"
+                                    initial={{ opacity: 0, y: -15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 15 }}
+                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                    style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+                                >
+                                    <div>
+                                        <label style={labelStyle}>Name</label>
+                                        <input
+                                            name="name"
+                                            value={editData.name}
+                                            onChange={handleProfileChange}
+                                            placeholder="Enter your name"
+                                            style={inputStyle}
+                                            onFocus={handleInputFocus}
+                                            onBlur={handleInputBlur}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Surname</label>
+                                        <input
+                                            name="surname"
+                                            value={editData.surname}
+                                            onChange={handleProfileChange}
+                                            placeholder="Enter your surname"
+                                            style={inputStyle}
+                                            onFocus={handleInputFocus}
+                                            onBlur={handleInputBlur}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={labelStyle}>Username</label>
+                                        <input
+                                            name="username"
+                                            value={editData.username}
+                                            onChange={handleProfileChange}
+                                            placeholder="Enter your username"
+                                            style={inputStyle}
+                                            onFocus={handleInputFocus}
+                                            onBlur={handleInputBlur}
+                                        />
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="view"
+                                    initial={{ opacity: 0, y: 15 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -15 }}
+                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                    style={{
+                                        background: "#f8fafc",
+                                        padding: "1rem",
+                                        borderRadius: "10px"
+                                    }}
+                                >
+                                    <div style={{fontSize: "1.5rem", fontWeight: "700", color: "#1f2937", marginBottom: "0.5rem"}}>
+                                        {currentUser.name} {currentUser.surname}
+                                    </div>
+                                    <div style={{color: "#6b7280", fontSize: "1rem"}}>@{currentUser.username}</div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+
+                        <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                            gap: "1rem"
+                        }}>
+                            <div style={{
+                                background: "#f8fafc",
+                                padding: "0.75rem 1rem",
+                                borderRadius: "10px",
+                                borderLeft: "3px solid #3b82f6"
                             }}>
-                                {isEditing ? 'Save' : 'Edit Profile'}
+                                <div style={{fontSize: "0.875rem", color: "#6b7280", fontWeight: "500"}}>Email</div>
+                                <div style={{fontSize: "1rem", color: "#374151", fontWeight: "600", marginTop: "0.25rem"}}>
+                                    {currentUser.email}
+                                </div>
+                            </div>
+                            <div style={{
+                                background: "#f8fafc",
+                                padding: "0.75rem 1rem",
+                                borderRadius: "10px",
+                                borderLeft: "3px solid #10b981"
+                            }}>
+                                <div style={{fontSize: "0.875rem", color: "#6b7280", fontWeight: "500"}}>Points</div>
+                                <div style={{fontSize: "1rem", color: "#374151", fontWeight: "600", marginTop: "0.25rem"}}>
+                                    {currentUser.points || 0}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{marginTop: '1rem', display: 'flex', gap: '0.75rem'}}>
+                            <button
+                                onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+                                style={{
+                                    ...buttonStyle,
+                                    backgroundColor: "#10b981"
+                                }}
+                                onMouseOver={(e) => e.target.style.backgroundColor = "#059669"}
+                                onMouseOut={(e) => e.target.style.backgroundColor = "#10b981"}
+                            >
+                                {isEditing ? 'Save Changes' : 'Edit Profile'}
                             </button>
                             {isEditing && (
                                 <button
@@ -390,15 +500,22 @@ const TestUsers = () => {
                                             surname: currentUser.surname,
                                             username: currentUser.username
                                         });
+                                        setProfileImagePreview(null);
+                                        setNewProfileFile(null);
                                     }}
                                     style={{
-                                        padding: '0.6rem 1.2rem',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        backgroundColor: 'white',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
+                                        padding: "0.6rem 1.2rem",
+                                        backgroundColor: "white",
+                                        color: "#374151",
+                                        border: "2px solid #e5e7eb",
+                                        borderRadius: "6px",
+                                        fontWeight: "600",
+                                        cursor: "pointer",
+                                        fontSize: "1rem",
+                                        transition: "all 0.3s"
                                     }}
+                                    onMouseOver={(e) => e.target.style.backgroundColor = "#f3f4f6"}
+                                    onMouseOut={(e) => e.target.style.backgroundColor = "white"}
                                 >
                                     Cancel
                                 </button>
@@ -410,253 +527,671 @@ const TestUsers = () => {
 
             {/* ===== Add New Car ===== */}
             <div style={{
-                padding: "1.5rem",
-                background: "#fff",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                padding: "2rem",
+                backgroundColor: "white",
+                borderRadius: "16px",
+                boxShadow: "0 8px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 5px -1px rgba(0, 0, 0, 0.04)",
+                border: "1px solid #f1f5f9",
                 marginBottom: "2rem"
             }}>
-                <h3 style={{marginBottom: "1rem", fontWeight: "600"}}>Add New Car</h3>
+                <h3 style={{
+                    marginBottom: "2rem",
+                    fontSize: "1.5rem",
+                    fontWeight: "700",
+                    color: "#1f2937",
+                    textAlign: "center"
+                }}>
+                    Add New Car
+                </h3>
 
-                <select style={styles.select} value={formData.make}
-                        onChange={(e) => handleCarChange("make", e.target.value)}>
-                    <option value="">Select Make</option>
-                    {loadingMakes ? <option>Loading...</option> : makes.map(make => (
-                        <option key={make.id} value={make.id}>{make.name}</option>
-                    ))}
-                </select>
-
-                <select style={styles.select} value={formData.model}
-                        onChange={(e) => handleCarChange("model", e.target.value)} disabled={!models.length}>
-                    <option value="">Select Model</option>
-                    {models.map(model => (
-                        <option key={model.name} value={model.name}>{model.name}</option>
-                    ))}
-                </select>
-
-                <select style={styles.select} value={formData.submodel}
-                        onChange={(e) => handleCarChange("submodel", e.target.value)} disabled={!submodels.length}>
-                    <option value="">Select Submodel</option>
-                    {submodels.map(sub => (
-                        <option key={sub.id} value={sub.id}>{sub.submodel}</option>
-                    ))}
-                </select>
-
-                <select style={styles.select} value={formData.trim}
-                        onChange={(e) => handleCarChange("trim", e.target.value)} disabled={!trims.length}>
-                    <option value="">Select Trim</option>
-                    {trims.map(trim => (
-                        <option key={trim.id} value={trim.id}>{trim.trim}</option>
-                    ))}
-                </select>
-
-                <input style={styles.input} name="year" value={formData.year}
-                       onChange={(e) => handleCarChange("year", e.target.value)} placeholder="Year"/>
-                <input style={styles.input} name="reg_plate" value={formData.reg_plate}
-                       onChange={(e) => handleCarChange("reg_plate", e.target.value)} placeholder="Registration Plate"/>
-                <input style={styles.input} name="hp" value={formData.hp}
-                       onChange={(e) => handleCarChange("hp", e.target.value)} placeholder="Horsepower"/>
-                <select
-                    style={styles.select}
-                    value={formData.fuel}
-                    onChange={(e) => handleCarChange("fuel", e.target.value)}
-                >
-                    <option value="">Select Fuel Type</option>
-                    <option value="Petrol">Petrol</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="Electric">Electric</option>
-                    <option value="LPG">LPG</option>
-                </select>
-                <label>Image</label>
-                <input type="file"
-                       accept="image/*"
-                       onChange={handleImageChange}/>
-                {
-                    formData.preview && (
-                        <img
-                            src={formData.preview || default_car}
-                            alt="preview"
-                            style={{maxWidth: "150px", marginTop: "0.5rem"}}/>
-                    )
-                }
-                <button style={styles.button} onClick={handleAddCar}>Add Car</button>
-            </div>
-
-            {/* ===== User CarsPage + Logs ===== */}
-            <h3>My Cars</h3>
-            <div style={styles.carGrid}>
-                {userCars.map(car => {
-                    const makeName = makes.find(m => String(m.id) === String(car.make))?.name || car.make;
-
-                    return (
-                        <div
-                            key={car.id}
-                            style={{
-                                background: "#fff",
-                                borderRadius: "16px",
-                                boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-                                overflow: "hidden",
-                                cursor: "pointer",
-                                transition: "transform 0.3s, box-shadow 0.3s",
-                            }}
-                            onClick={() => navigate(`/cars/${car.id}`)}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.transform = "translateY(-6px)";
-                                e.currentTarget.style.boxShadow = "0 12px 30px rgba(0,0,0,0.15)";
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.transform = "translateY(0)";
-                                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.08)";
-                            }}
+                <div style={{
+                    display: "grid",
+                    gap: "1.25rem",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                    marginBottom: "2rem"
+                }}>
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Make
+                        </label>
+                        <select
+                            style={inputStyle}
+                            value={formData.make}
+                            onChange={(e) => handleCarChange("make", e.target.value)}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
                         >
+                            <option value="">Select Make</option>
+                            {loadingMakes ? <option>Loading...</option> : makes.map(make => (
+                                <option key={make.id} value={make.id}>{make.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                            {car.image ? (
-                                <img
-                                    src={car.image}
-                                    alt={`${makeName} ${car.model}`}
-                                    style={{width: "100%", height: "180px", objectFit: "cover"}}
-                                />
-                            ) : (
-                                /*<div
-                                    style={{
-                                        width: "100%",
-                                        height: "180px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        backgroundColor: "#f0f0f0",
-                                        color: "#aaa",
-                                        fontSize: "1.2rem",
-                                        fontWeight: "bold",
-                                    }}
-                                >*/<img
-                                    src={default_car}
-                                    alt={`${makeName} ${car.model}`}
-                                    style={{width: "100%", height: "180px", objectFit: "cover"}}
-                                />
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Model
+                        </label>
+                        <select
+                            style={{
+                                ...inputStyle,
+                                opacity: !models.length ? 0.6 : 1,
+                                cursor: !models.length ? "not-allowed" : "pointer"
+                            }}
+                            value={formData.model}
+                            onChange={(e) => handleCarChange("model", e.target.value)}
+                            disabled={!models.length}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        >
+                            <option value="">Select Model</option>
+                            {models.map(model => (
+                                <option key={model.name} value={model.name}>{model.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                            )}
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Submodel
+                        </label>
+                        <select
+                            style={{
+                                ...inputStyle,
+                                opacity: !submodels.length ? 0.6 : 1,
+                                cursor: !submodels.length ? "not-allowed" : "pointer"
+                            }}
+                            value={formData.submodel}
+                            onChange={(e) => handleCarChange("submodel", e.target.value)}
+                            disabled={!submodels.length}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        >
+                            <option value="">Select Submodel</option>
+                            {submodels.map(sub => (
+                                <option key={sub.id} value={sub.id}>{sub.submodel}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                            {/* Card Body */}
-                            <div style={{padding: "1rem", display: "flex", flexDirection: "column", gap: "0.3rem"}}>
-                                <div style={{fontSize: "1.2rem", fontWeight: "600"}}>
-                                    {makeName} {car.model} ({car.year})
-                                </div>
-                                <div style={{color: "#555", fontSize: "0.95rem"}}>Plate: {car.reg_plate}</div>
-                                <div style={{color: "#555", fontSize: "0.95rem"}}>Fuel: {car.fuel || "N/A"}</div>
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Trim
+                        </label>
+                        <select
+                            style={{
+                                ...inputStyle,
+                                opacity: !trims.length ? 0.6 : 1,
+                                cursor: !trims.length ? "not-allowed" : "pointer"
+                            }}
+                            value={formData.trim}
+                            onChange={(e) => handleCarChange("trim", e.target.value)}
+                            disabled={!trims.length}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        >
+                            <option value="">Select Trim</option>
+                            {trims.map(trim => (
+                                <option key={trim.id} value={trim.id}>{trim.trim}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                                {/* Buttons */}
-                                <div style={{display: "flex", gap: "0.5rem", marginTop: "0.8rem"}}>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/cars/${car.id}/edit`);
-                                        }}
-                                        style={{
-                                            flex: 1,
-                                            padding: "0.4rem 0",
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            backgroundColor: "#1d4ed8",
-                                            color: "#fff",
-                                            cursor: "pointer",
-                                            fontSize: "0.85rem",
-                                            fontWeight: "600",
-                                            transition: "background 0.2s",
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2563eb"}
-                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#1d4ed8"}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (window.confirm("Are you sure you want to delete this car?")) {
-                                                onDelete(car.id);
-                                            }
-                                        }}
-                                        style={{
-                                            flex: 1,
-                                            padding: "0.4rem 0",
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            backgroundColor: "#ef4444",
-                                            color: "#fff",
-                                            cursor: "pointer",
-                                            fontSize: "0.85rem",
-                                            fontWeight: "600",
-                                            transition: "background 0.2s",
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f87171"}
-                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "#ef4444"}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Year
+                        </label>
+                        <input
+                            style={inputStyle}
+                            name="year"
+                            value={formData.year}
+                            onChange={(e) => handleCarChange("year", e.target.value)}
+                            placeholder="Enter year"
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Registration Plate
+                        </label>
+                        <input
+                            style={inputStyle}
+                            name="reg_plate"
+                            value={formData.reg_plate}
+                            onChange={(e) => handleCarChange("reg_plate", e.target.value)}
+                            placeholder="Enter plate number"
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Horsepower
+                        </label>
+                        <input
+                            style={inputStyle}
+                            name="hp"
+                            value={formData.hp}
+                            onChange={(e) => handleCarChange("hp", e.target.value)}
+                            placeholder="Enter horsepower"
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{
+                            display: "block",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.875rem",
+                            fontWeight: "600",
+                            color: "#374151",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em"
+                        }}>
+                            Fuel Type
+                        </label>
+                        <select
+                            style={inputStyle}
+                            value={formData.fuel}
+                            onChange={(e) => handleCarChange("fuel", e.target.value)}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
+                        >
+                            <option value="">Select Fuel Type</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Electric">Electric</option>
+                            <option value="LPG">LPG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style={{marginBottom: "2rem"}}>
+                    <label style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        fontSize: "0.875rem",
+                        fontWeight: "600",
+                        color: "#374151",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em"
+                    }}>
+                        Car Image
+                    </label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        style={{
+                            width: "100%",
+                            padding: "0.875rem 1rem",
+                            border: "2px solid #e5e7eb",
+                            borderRadius: "10px",
+                            fontSize: "1rem",
+                            transition: "all 0.2s ease",
+                            boxSizing: "border-box",
+                            backgroundColor: "#fafbfc"
+                        }}
+                    />
+                    {formData.preview && (
+                        <div style={{marginTop: "1rem"}}>
+                            <img
+                                src={formData.preview || default_car}
+                                alt="Car preview"
+                                style={{
+                                    maxWidth: "200px",
+                                    height: "120px",
+                                    objectFit: "cover",
+                                    borderRadius: "10px",
+                                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
+                                }}
+                            />
                         </div>
-                    );
-                })}
+                    )}
+                </div>
+
+                <div style={{textAlign: "center"}}>
+                    <button
+                        style={buttonStyle}
+                        onClick={handleAddCar}
+                        onMouseOver={(e) => e.target.style.backgroundColor = "rgb(67, 56, 202)"}
+                        onMouseOut={(e) => e.target.style.backgroundColor = "rgb(79, 70, 229)"}
+                    >
+                        Add Car
+                    </button>
+                </div>
             </div>
-            <h3 style={{marginTop: "2rem"}}>Threads Created by {currentUser.username}</h3>
-            <div style={styles.threadGrid}>
-                {threads.filter(t => t.userId === currentUser.uid).length === 0 ? (
-                    <p style={{color: "#555"}}>This user has not created any threads.</p>
+
+            {/* ===== User Cars ===== */}
+            <div style={{marginBottom: "2rem"}}>
+                <h3 style={{
+                    fontSize: "1.75rem",
+                    fontWeight: "700",
+                    color: "#1f2937",
+                    marginBottom: "1.5rem",
+                    textAlign: "center"
+                }}>
+                    My Cars
+                </h3>
+
+                {userCars.length === 0 ? (
+                    <div style={{
+                        textAlign: "center",
+                        padding: "4rem 2rem",
+                        backgroundColor: "white",
+                        borderRadius: "16px",
+                        border: "1px solid #f1f5f9"
+                    }}>
+                        <div style={{
+                            width: "80px",
+                            height: "80px",
+                            margin: "0 auto 1.5rem",
+                            background: "#f1f5f9",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "2rem"
+                        }}>
+                            🚗
+                        </div>
+                        <h4 style={{
+                            margin: "0 0 0.5rem 0",
+                            fontSize: "1.25rem",
+                            fontWeight: "600",
+                            color: "#374151"
+                        }}>
+                            No cars added yet
+                        </h4>
+                        <p style={{
+                            margin: 0,
+                            fontSize: "1rem",
+                            color: "#6b7280"
+                        }}>
+                            Add your first car to start tracking fuel consumption
+                        </p>
+                    </div>
                 ) : (
-                    threads
-                        .filter(t => t.userId === currentUser.uid)
-                        .map(thread => (
+                    <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                        gap: "1.5rem"
+                    }}>
+                        {userCars.map(car => {
+                            const makeName = makes.find(m => String(m.id) === String(car.make))?.name || car.make;
+
+                            return (
+                                <div
+                                    key={car.id}
+                                    style={{
+                                        background: "white",
+                                        borderRadius: "16px",
+                                        boxShadow: "0 8px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 5px -1px rgba(0, 0, 0, 0.04)",
+                                        border: "1px solid #f1f5f9",
+                                        overflow: "hidden",
+                                        cursor: "pointer",
+                                        transition: "all 0.3s ease",
+                                    }}
+                                    onClick={() => navigate(`/cars/${car.id}`)}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.transform = "translateY(-4px)";
+                                        e.currentTarget.style.boxShadow = "0 12px 20px -4px rgba(0, 0, 0, 0.15)";
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = "translateY(0)";
+                                        e.currentTarget.style.boxShadow = "0 8px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 5px -1px rgba(0, 0, 0, 0.04)";
+                                    }}
+                                >
+                                    <img
+                                        src={car.image || default_car}
+                                        alt={`${makeName} ${car.model}`}
+                                        style={{width: "100%", height: "180px", objectFit: "cover"}}
+                                    />
+
+                                    <div style={{padding: "1.5rem"}}>
+                                        <div style={{
+                                            fontSize: "1.25rem",
+                                            fontWeight: "700",
+                                            color: "#1f2937",
+                                            marginBottom: "1rem"
+                                        }}>
+                                            {makeName} {car.model} ({car.year})
+                                        </div>
+
+                                        <div style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+                                            gap: "0.75rem",
+                                            marginBottom: "1.5rem"
+                                        }}>
+                                            <div style={{
+                                                background: "#f8fafc",
+                                                padding: "0.5rem 0.75rem",
+                                                borderRadius: "8px"
+                                            }}>
+                                                <div style={{fontSize: "0.75rem", color: "#6b7280", fontWeight: "500"}}>Plate</div>
+                                                <div style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
+                                                    {car.reg_plate}
+                                                </div>
+                                            </div>
+                                            <div style={{
+                                                background: "#f8fafc",
+                                                padding: "0.5rem 0.75rem",
+                                                borderRadius: "8px"
+                                            }}>
+                                                <div style={{fontSize: "0.75rem", color: "#6b7280", fontWeight: "500"}}>Fuel</div>
+                                                <div style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
+                                                    {car.fuel || "N/A"}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{display: "flex", gap: "0.75rem"}}>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/cars/${car.id}/edit`);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: "0.6rem 1rem",
+                                                    borderRadius: "8px",
+                                                    border: "none",
+                                                    backgroundColor: "rgb(79, 70, 229)",
+                                                    color: "white",
+                                                    cursor: "pointer",
+                                                    fontSize: "0.875rem",
+                                                    fontWeight: "600",
+                                                    transition: "all 0.3s",
+                                                }}
+                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgb(67, 56, 202)"}
+                                                onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgb(79, 70, 229)"}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (window.confirm("Are you sure you want to delete this car?")) {
+                                                        onDelete(car.id);
+                                                    }
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: "0.6rem 1rem",
+                                                    borderRadius: "8px",
+                                                    border: "none",
+                                                    backgroundColor: "#ef4444",
+                                                    color: "white",
+                                                    cursor: "pointer",
+                                                    fontSize: "0.875rem",
+                                                    fontWeight: "600",
+                                                    transition: "all 0.3s",
+                                                }}
+                                                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#dc2626"}
+                                                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#ef4444"}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* ===== User Threads ===== */}
+            <div style={{marginBottom: "2rem"}}>
+                <h3 style={{
+                    fontSize: "1.75rem",
+                    fontWeight: "700",
+                    color: "#1f2937",
+                    marginBottom: "1.5rem",
+                    textAlign: "center"
+                }}>
+                    Threads Created by {currentUser.username}
+                </h3>
+
+                {userThreads.length === 0 ? (
+                    <div style={{
+                        textAlign: "center",
+                        padding: "3rem 2rem",
+                        backgroundColor: "white",
+                        borderRadius: "16px",
+                        border: "1px solid #f1f5f9"
+                    }}>
+                        <div style={{
+                            width: "70px",
+                            height: "70px",
+                            margin: "0 auto 1.25rem",
+                            background: "#f1f5f9",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.75rem"
+                        }}>
+                            💬
+                        </div>
+                        <h4 style={{
+                            margin: "0 0 0.5rem 0",
+                            fontSize: "1.125rem",
+                            fontWeight: "600",
+                            color: "#374151"
+                        }}>
+                            No threads created yet
+                        </h4>
+                        <p style={{
+                            margin: 0,
+                            fontSize: "0.95rem",
+                            color: "#6b7280"
+                        }}>
+                            This user has not created any threads.
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{display: "flex", flexDirection: "column", gap: "1rem"}}>
+                        {userThreads.map(thread => (
                             <div
                                 key={thread.id}
                                 style={{
-                                    padding: "1rem",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    marginBottom: "1rem",
+                                    padding: "1.5rem",
+                                    backgroundColor: "white",
+                                    borderRadius: "12px",
+                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                    border: "1px solid #f1f5f9",
                                     cursor: "pointer",
-                                    background: "#fff"
+                                    transition: "all 0.2s ease"
                                 }}
                                 onClick={() => navigate(`/threads/${thread.id}`)}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.boxShadow = "0 8px 12px -2px rgba(0, 0, 0, 0.15)";
+                                    e.currentTarget.style.transform = "translateY(-2px)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                }}
                             >
-                                <h4 style={{marginBottom: "0.5rem"}}>{thread.title}</h4>
-                                <p style={{color: "#666", fontSize: "0.9rem"}}>
+                                <h4 style={{
+                                    marginBottom: "0.75rem",
+                                    fontSize: "1.25rem",
+                                    fontWeight: "600",
+                                    color: "#1f2937"
+                                }}>
+                                    {thread.title}
+                                </h4>
+                                <p style={{
+                                    color: "#6b7280",
+                                    fontSize: "0.95rem",
+                                    margin: 0,
+                                    lineHeight: "1.5"
+                                }}>
                                     {thread.description.slice(0, 100)}...
                                 </p>
                             </div>
-                        ))
+                        ))}
+                    </div>
                 )}
             </div>
 
-            <h3 style={{marginTop: "2rem"}}>Threads {currentUser.username} Contributed To</h3>
-            <div style={styles.threadGrid}>
+            {/* ===== Contributed Threads ===== */}
+            <div style={{marginBottom: "2rem"}}>
+                <h3 style={{
+                    fontSize: "1.75rem",
+                    fontWeight: "700",
+                    color: "#1f2937",
+                    marginBottom: "1.5rem",
+                    textAlign: "center"
+                }}>
+                    Threads {currentUser.username} Contributed To
+                </h3>
+
                 {contributedThreads.length === 0 ? (
-                    <p style={{color: "#555"}}>You have not contributed to any threads.</p>
-                ) : (
-                    contributedThreads.map(thread => (
-                        <div
-                            key={thread.id}
-                            style={{
-                                padding: "1rem",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                                marginBottom: "1rem",
-                                cursor: "pointer",
-                                background: "#fff"
-                            }}
-                            onClick={() => navigate(`/threads/${thread.id}`)}
-                        >
-                            <h4 style={{marginBottom: "0.5rem"}}>{thread.title}</h4>
-                            <p style={{color: "#666", fontSize: "0.9rem"}}>
-                                {thread.description.slice(0, 100)}...
-                            </p>
+                    <div style={{
+                        textAlign: "center",
+                        padding: "3rem 2rem",
+                        backgroundColor: "white",
+                        borderRadius: "16px",
+                        border: "1px solid #f1f5f9"
+                    }}>
+                        <div style={{
+                            width: "70px",
+                            height: "70px",
+                            margin: "0 auto 1.25rem",
+                            background: "#f1f5f9",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.75rem"
+                        }}>
+                            📝
                         </div>
-                    ))
+                        <h4 style={{
+                            margin: "0 0 0.5rem 0",
+                            fontSize: "1.125rem",
+                            fontWeight: "600",
+                            color: "#374151"
+                        }}>
+                            No contributions yet
+                        </h4>
+                        <p style={{
+                            margin: 0,
+                            fontSize: "0.95rem",
+                            color: "#6b7280"
+                        }}>
+                            You have not contributed to any threads.
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{display: "flex", flexDirection: "column", gap: "1rem"}}>
+                        {contributedThreads.map(thread => (
+                            <div
+                                key={thread.id}
+                                style={{
+                                    padding: "1.5rem",
+                                    backgroundColor: "white",
+                                    borderRadius: "12px",
+                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                    border: "1px solid #f1f5f9",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s ease"
+                                }}
+                                onClick={() => navigate(`/threads/${thread.id}`)}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.boxShadow = "0 8px 12px -2px rgba(0, 0, 0, 0.15)";
+                                    e.currentTarget.style.transform = "translateY(-2px)";
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                }}
+                            >
+                                <h4 style={{
+                                    marginBottom: "0.75rem",
+                                    fontSize: "1.25rem",
+                                    fontWeight: "600",
+                                    color: "#1f2937"
+                                }}>
+                                    {thread.title}
+                                </h4>
+                                <p style={{
+                                    color: "#6b7280",
+                                    fontSize: "0.95rem",
+                                    margin: 0,
+                                    lineHeight: "1.5"
+                                }}>
+                                    {thread.description.slice(0, 100)}...
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
-
-
         </div>
     );
 };
