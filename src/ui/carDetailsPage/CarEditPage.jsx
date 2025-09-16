@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useCars from "../../hooks/useCars";
+import default_car from "../../images/default-car.png"
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../config/firebase";
 
 const fuelOptions = ["Petrol", "Diesel", "Electric", "Hybrid"];
 const yearOptions = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
@@ -20,6 +23,8 @@ const CarEditPage = () => {
         reg_plate: "",
         fuel: "",
         image: "",
+        hp:"",
+        preview:""
     });
 
     const [makes, setMakes] = useState([]);
@@ -37,6 +42,8 @@ const CarEditPage = () => {
                 reg_plate: foundCar.reg_plate || "",
                 fuel: foundCar.fuel || "",
                 image: foundCar.image || "",
+                hp: foundCar.hp || "",
+                preview: foundCar.image || default_car
             });
         }
 
@@ -73,12 +80,19 @@ const CarEditPage = () => {
         if (field === "make") setFormData((prev) => ({ ...prev, model: "" }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.make || !formData.model || !formData.year) {
             alert("Please fill in make, model, and year.");
             return;
         }
-        onUpdate({ ...car, ...formData }, car.id);
+        let imageUrl = ""
+        if (formData.image instanceof File) {
+            const imageRef = ref(storage, `cars/${formData.image.name}`);
+            await uploadBytes(imageRef, formData.image);
+            imageUrl = await getDownloadURL(imageRef);
+        }
+
+        onUpdate({...car, ...formData,image:imageUrl}, car.id);
         navigate(`/cars/${car.id}`);
     };
 
@@ -98,6 +112,14 @@ const CarEditPage = () => {
     const inputStyle = { width: "100%", padding: "0.5rem 0.75rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" };
     const buttonStyle = { padding: "0.5rem 1rem", borderRadius: "8px", border: "none", fontWeight: 600, cursor: "pointer", backgroundColor: "#1d4ed8", color: "#fff" };
     const cancelButtonStyle = { ...buttonStyle, backgroundColor: "#ef4444", marginLeft: "0.5rem" };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setFormData({...formData, image: file, preview: previewUrl})
+        }
+    }
 
     return (
         <div style={containerStyle}>
@@ -127,12 +149,48 @@ const CarEditPage = () => {
                 {fuelOptions.map((fuel) => <option key={fuel} value={fuel}>{fuel}</option>)}
             </select>
 
+            <label style={labelStyle}>HP:</label>
+            <input type="text" style={inputStyle} value={formData.hp} onChange={(e) => handleChange("hp", e.target.value)} placeholder="Horsepower" />
+
             <label style={labelStyle}>Plate:</label>
             <input type="text" style={inputStyle} value={formData.reg_plate} onChange={(e) => handleChange("reg_plate", e.target.value)} placeholder="Plate" />
 
-            <label style={labelStyle}>Image URL:</label>
-            <input type="text" style={inputStyle} value={formData.image} onChange={(e) => handleChange("image", e.target.value)} placeholder="Image URL" />
+            <div style={{marginBottom: "2rem"}}>
+                <label style={labelStyle}>
+                    Car Image
+                </label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{
+                        width: "100%",
+                        padding: "0.875rem 1rem",
+                        border: "2px solid #e5e7eb",
+                        borderRadius: "10px",
+                        fontSize: "1rem",
+                        transition: "all 0.2s ease",
+                        boxSizing: "border-box",
+                        backgroundColor: "#fafbfc"
+                    }}
+                />
+                {formData.preview && (
+                    <div style={{marginTop: "1rem"}}>
+                        <img
+                            src={formData.preview || default_car}
+                            alt="Car preview"
+                            style={{
+                                maxWidth: "200px",
+                                height: "120px",
+                                objectFit: "cover",
+                                borderRadius: "10px",
+                                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
+                            }}
+                        />
+                    </div>
 
+                )}
+            </div>
             <div style={{ marginTop: "1.5rem" }}>
                 <button style={buttonStyle} onClick={handleSave}>Save</button>
                 <button style={cancelButtonStyle} onClick={() => navigate(`/cars/${car.id}`)}>Cancel</button>

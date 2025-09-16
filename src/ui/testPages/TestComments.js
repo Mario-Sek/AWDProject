@@ -2,7 +2,9 @@ import React, {useState} from "react";
 import useComments from "../../hooks/useComments";
 import TestReplies from "./TestReplies";
 import {useAuth} from "../../hooks/useAuth";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../config/firebase";
 
 const initialFormData = {
     description: "",
@@ -31,7 +33,7 @@ const TestComments = ({threadId, findUserById}) => {
         setFormData((prev) => ({...prev, [name]: value}));
     };
 
-    const handleSubmit = () => {
+    /*const handleSubmit = () => {
         if (!formData.description.trim() || !user) return;
 
         onAdd({
@@ -44,7 +46,43 @@ const TestComments = ({threadId, findUserById}) => {
         });
         setFormData(initialFormData);
         setShowForm(false);
+    };*/
+
+    const handleSubmit = async () => {
+        if (!user) {
+            alert("You must be logged in to post threads.");
+            return;
+        }
+
+        let imageURL = ""
+
+        if (formData.image) {
+            const storageRef = ref(storage, `comments/${formData.image.name}`);
+            await uploadBytes(storageRef, formData.image);
+            imageURL = await getDownloadURL(storageRef);
+        }
+
+        if (!formData.description.trim()) return;
+        await onAdd({
+            ...formData,
+            image: imageURL,
+            createdAt: new Date(),
+            userId: user.uid,
+            upvotes: 0,
+            downvotes: 0,
+            votedBy: {},
+        });
+        setFormData(initialFormData);
+        setShowForm(false);
     };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setFormData({...formData, image: file, preview: previewUrl})
+        }
+    }
 
     const handleVote = (comment, type) => {
         if (!user) return;
@@ -73,16 +111,28 @@ const TestComments = ({threadId, findUserById}) => {
     const startEditing = (comment) => {
         if (comment.userId !== user?.uid) return;
         setEditingCommentId(comment.id);
-        setEditFormData({description: comment.description, image: comment.image || ""});
+        setEditFormData({description: comment.description, image: comment.image || "", preview: comment.image || ""});
     };
 
     const cancelEditing = () => {
         setEditingCommentId(null);
-        setEditFormData({description: "", image: ""});
+        setEditFormData({description: "", image: "", preview: ""});
     };
 
-    const saveEdit = (commentId) => {
-        onUpdate(commentId, {description: editFormData.description, image: editFormData.image});
+    const saveEdit = async (commentId) => {
+        let imageURL = editFormData.image;
+
+        if (editFormData.image instanceof File) {
+            const storageRef = ref(storage, `comments/${editFormData.image.name}`);
+            await uploadBytes(storageRef, editFormData.image);
+            imageURL = await getDownloadURL(storageRef);
+        }
+
+        await onUpdate(commentId, {
+            description: editFormData.description,
+            image: imageURL
+        });
+
         cancelEditing();
     };
 
@@ -404,6 +454,7 @@ const TestComments = ({threadId, findUserById}) => {
 
     const sortedComments = getSortedComments();
 
+
     return (
         <div style={styles.container}>
             <h3 style={styles.header}>Comments ({comments.length})</h3>
@@ -454,15 +505,18 @@ const TestComments = ({threadId, findUserById}) => {
                     <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const blobUrl = URL.createObjectURL(file);
-                                setFormData((prev) => ({...prev, image: blobUrl}));
-                            }
-                        }}
+                        onChange={handleImageChange}
                         style={styles.input}
                     />
+
+                    {formData.preview && (
+                        <img
+                            src={formData.preview}
+                            alt="Preview"
+                            style={{maxWidth: "100%", borderRadius: "8px", marginTop: "0.5rem"}}
+                        />
+                    )}
+
                     <div style={styles.formButtons}>
                         <button
                             style={{...styles.smallButton, ...styles.secondaryButton}}
@@ -491,7 +545,9 @@ const TestComments = ({threadId, findUserById}) => {
                         <div key={comment.id} style={styles.commentCard}>
                             <div style={styles.commentHeader}>
                                 <div style={styles.username}>
-                                    {commentUser?.username || commentUser?.email || "Unknown User"}
+                                    <Link to={`/users/${commentUser.uid}`}>
+                                        {commentUser?.username || commentUser?.email || "Unknown User"}
+                                    </Link>
                                 </div>
                                 <div style={styles.metadata}>
                                     {comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleString() : new Date(comment.createdAt).toLocaleString()}
@@ -513,12 +569,24 @@ const TestComments = ({threadId, findUserById}) => {
                                         onChange={(e) => {
                                             const file = e.target.files[0];
                                             if (file) {
-                                                const blobUrl = URL.createObjectURL(file);
-                                                setEditFormData((prev) => ({...prev, image: blobUrl}));
+                                                const previewUrl = URL.createObjectURL(file);
+                                                setEditFormData((prev) => ({
+                                                    ...prev,
+                                                    image: file,
+                                                    preview: previewUrl
+                                                }));
                                             }
                                         }}
                                         style={styles.input}
                                     />
+
+                                    {editFormData.preview && (
+                                        <img
+                                            src={editFormData.preview}
+                                            alt="Preview"
+                                            style={{maxWidth: "100%", borderRadius: "8px", marginTop: "0.5rem"}}
+                                        />
+                                    )}
                                     <div style={styles.formButtons}>
                                         <button
                                             style={{...styles.smallButton, ...styles.secondaryButton}}

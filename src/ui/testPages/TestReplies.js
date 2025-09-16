@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import useReplies from "../../hooks/useReplies";
 import {useAuth} from "../../hooks/useAuth";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 
 const TestReplies = ({
                          threadId,
@@ -365,7 +365,7 @@ const TestReplies = ({
                     return (
                         <div key={r.id} style={styles.replyCard}>
                             <div style={styles.username}>
-                                {r.user?.username || r.user?.email || "Unknown User"}
+                                <Link to={r.user.uid}>{r.user?.username || r.user?.email || "Unknown User"}</Link>
                             </div>
                             <div style={styles.metadata}>
                                 {r.createdAt.toDate ? r.createdAt.toDate().toLocaleString() : new Date(r.createdAt).toLocaleString()}
@@ -479,6 +479,8 @@ const TestReplies = ({
                                                 <img src={replyFormData[r.id].image} alt="Preview"
                                                      style={styles.replyImage}/>
                                             )}
+                                            {/*
+                                            TODO: dali da go pravam ili ne, mi nema logika 650 sliki da se stavat
                                             <input
                                                 type="file"
                                                 accept="image/*"
@@ -490,7 +492,7 @@ const TestReplies = ({
                                                     }
                                                 }}
                                                 style={styles.input}
-                                            />
+                                            />*/}
                                             <div style={styles.formButtons}>
                                                 <button
                                                     style={{...styles.smallButton, ...styles.secondaryButton}}

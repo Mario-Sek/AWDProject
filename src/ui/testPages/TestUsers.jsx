@@ -10,7 +10,8 @@ import useThreads from "../../hooks/useThreads";
 import default_car from "../../images/default-car.png"
 import commentsRepository from "../../repository/subcollections/commentsRepository";
 import repliesRepository from "../../repository/subcollections/repliesRepository";
-import { motion, AnimatePresence } from "framer-motion";
+import {motion, AnimatePresence} from "framer-motion";
+import EditIcon from "@mui/icons-material/Edit";
 
 
 const VERCEL_BASE_URL = "https://carapi-zeta.vercel.app";
@@ -49,6 +50,9 @@ const TestUsers = () => {
     const [previewImage, setPreviewImage] = useState(currentUser?.photoURL || default_avatar_icon);
     const [profileImagePreview, setProfileImagePreview] = useState(null);
     const [newProfileFile, setNewProfileFile] = useState(null);
+
+    const [hover,setHover] = useState(false)
+
 
     const [contributedThreads, setContributedThreads] = useState([]);
 
@@ -353,23 +357,43 @@ const TestUsers = () => {
                 </h2>
 
                 <div style={{display: "flex", gap: "2rem", alignItems: "flex-start"}}>
-                    <div style={{
-                        width: "120px",
-                        height: "120px",
-                        borderRadius: "50%",
-                        border: "3px solid #e5e7eb",
-                        overflow: "hidden",
-                        cursor: isEditing ? "pointer" : "default",
-                        flexShrink: 0,
-                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)"
-                    }}
-                         onClick={() => isEditing && document.getElementById("profileImageInput").click()}
+
+                    <div
+                        style={{
+                            width: "120px",
+                            height: "120px",
+                            borderRadius: "50%",
+                            border: "3px solid #e5e7eb",
+                            overflow: "hidden",
+                            cursor: isEditing ? "pointer" : "default",
+                            flexShrink: 0,
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                            position: "relative",
+                        }}
+                        onClick={() => isEditing && document.getElementById("profileImageInput").click()}
+                        onMouseOver={() => setHover(true)}
+                        onMouseOut={() => setHover(false)}
                     >
                         <img
                             src={profileImagePreview || currentUser.photoURL || default_avatar_icon}
                             alt="User"
-                            style={{width: "100%", height: "100%", objectFit: "cover"}}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
+
+                        {isEditing && hover && (
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    backgroundColor: "rgba(0,0,0,0.4)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <EditIcon style={{ color: "white", fontSize: 32 }} />
+                            </div>
+                        )}
                     </div>
 
                     <input
@@ -385,11 +409,11 @@ const TestUsers = () => {
                             {isEditing ? (
                                 <motion.div
                                     key="edit"
-                                    initial={{ opacity: 0, y: -15 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 15 }}
-                                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                                    style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+                                    initial={{opacity: 0, y: -15}}
+                                    animate={{opacity: 1, y: 0}}
+                                    exit={{opacity: 0, y: 15}}
+                                    transition={{duration: 0.35, ease: "easeInOut"}}
+                                    style={{display: "flex", flexDirection: "column", gap: "1.25rem"}}
                                 >
                                     <div>
                                         <label style={labelStyle}>Name</label>
@@ -431,17 +455,22 @@ const TestUsers = () => {
                             ) : (
                                 <motion.div
                                     key="view"
-                                    initial={{ opacity: 0, y: 15 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -15 }}
-                                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                                    initial={{opacity: 0, y: 15}}
+                                    animate={{opacity: 1, y: 0}}
+                                    exit={{opacity: 0, y: -15}}
+                                    transition={{duration: 0.35, ease: "easeInOut"}}
                                     style={{
                                         background: "#f8fafc",
                                         padding: "1rem",
                                         borderRadius: "10px"
                                     }}
                                 >
-                                    <div style={{fontSize: "1.5rem", fontWeight: "700", color: "#1f2937", marginBottom: "0.5rem"}}>
+                                    <div style={{
+                                        fontSize: "1.5rem",
+                                        fontWeight: "700",
+                                        color: "#1f2937",
+                                        marginBottom: "0.5rem"
+                                    }}>
                                         {currentUser.name} {currentUser.surname}
                                     </div>
                                     <div style={{color: "#6b7280", fontSize: "1rem"}}>@{currentUser.username}</div>
@@ -462,7 +491,12 @@ const TestUsers = () => {
                                 borderLeft: "3px solid #3b82f6"
                             }}>
                                 <div style={{fontSize: "0.875rem", color: "#6b7280", fontWeight: "500"}}>Email</div>
-                                <div style={{fontSize: "1rem", color: "#374151", fontWeight: "600", marginTop: "0.25rem"}}>
+                                <div style={{
+                                    fontSize: "1rem",
+                                    color: "#374151",
+                                    fontWeight: "600",
+                                    marginTop: "0.25rem"
+                                }}>
                                     {currentUser.email}
                                 </div>
                             </div>
@@ -473,7 +507,12 @@ const TestUsers = () => {
                                 borderLeft: "3px solid #10b981"
                             }}>
                                 <div style={{fontSize: "0.875rem", color: "#6b7280", fontWeight: "500"}}>Points</div>
-                                <div style={{fontSize: "1rem", color: "#374151", fontWeight: "600", marginTop: "0.25rem"}}>
+                                <div style={{
+                                    fontSize: "1rem",
+                                    color: "#374151",
+                                    fontWeight: "600",
+                                    marginTop: "0.25rem"
+                                }}>
                                     {currentUser.points || 0}
                                 </div>
                             </div>
@@ -808,6 +847,7 @@ const TestUsers = () => {
                                 }}
                             />
                         </div>
+
                     )}
                 </div>
 
@@ -930,8 +970,14 @@ const TestUsers = () => {
                                                 padding: "0.5rem 0.75rem",
                                                 borderRadius: "8px"
                                             }}>
-                                                <div style={{fontSize: "0.75rem", color: "#6b7280", fontWeight: "500"}}>Plate</div>
-                                                <div style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
+                                                <div style={{
+                                                    fontSize: "0.75rem",
+                                                    color: "#6b7280",
+                                                    fontWeight: "500"
+                                                }}>Plate
+                                                </div>
+                                                <div
+                                                    style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
                                                     {car.reg_plate}
                                                 </div>
                                             </div>
@@ -940,8 +986,14 @@ const TestUsers = () => {
                                                 padding: "0.5rem 0.75rem",
                                                 borderRadius: "8px"
                                             }}>
-                                                <div style={{fontSize: "0.75rem", color: "#6b7280", fontWeight: "500"}}>Fuel</div>
-                                                <div style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
+                                                <div style={{
+                                                    fontSize: "0.75rem",
+                                                    color: "#6b7280",
+                                                    fontWeight: "500"
+                                                }}>Fuel
+                                                </div>
+                                                <div
+                                                    style={{fontSize: "0.875rem", color: "#374151", fontWeight: "600"}}>
                                                     {car.fuel || "N/A"}
                                                 </div>
                                             </div>

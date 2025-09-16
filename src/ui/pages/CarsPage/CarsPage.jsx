@@ -59,7 +59,7 @@ const CarsPage = () => {
             }
             setLoadingModels(true);
             try {
-                const makeObj = makes.find((m) => m.name === makeFilter);
+                const makeObj = makes.find((m) => m.id.toString() === makeFilter);
                 if (!makeObj) return setModels([]);
                 const res = await fetch(
                     `${VERCEL_BASE_URL}/api/models?make_id=${makeObj.id}`
@@ -89,7 +89,7 @@ const CarsPage = () => {
             const matchesModel = modelFilter ? car.model === modelFilter : true;
             const matchesFuel = fuelFilter ? car.fuel === fuelFilter : true;
             const matchesSearch = search
-                ? car.make.toLowerCase().includes(search.toLowerCase()) ||
+                ? makes.find(c=>c.id.toString() === car.make.toString())?.name.toLowerCase().includes(search.toLowerCase()) ||
                 car.model.toLowerCase().includes(search.toLowerCase())
                 : true;
             return matchesYear && matchesMake && matchesModel && matchesFuel && matchesSearch;
@@ -220,12 +220,11 @@ const CarsPage = () => {
                         >
                             <option value="">Select make</option>
                             {loadingMakes ? <option>Loading...</option> : makes.map(make => (
-                                <option key={make.id} value={make.name}>{make.name}</option>
+                                <option key={make.id} value={make.id}>{make.name}</option>
                             ))}
                         </select>
                     </div>
 
-                    {/* --- Model filter --- */}
                     <div>
                         <label style={{
                             display: "block",
@@ -320,7 +319,7 @@ const CarsPage = () => {
                         </div>
                     </div>
 
-                    {/* --- Sort order --- */}
+
                     <div>
                         <label style={{
                             display: "block",
@@ -406,6 +405,7 @@ const CarsPage = () => {
                         gap: "1.5rem"
                     }}>
                         {currentCars.map(car => (
+
                             <div key={car.id} style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -441,7 +441,7 @@ const CarsPage = () => {
                                             marginBottom: "0.5rem"
                                         }}
                                     >
-                                        {car.make} {car.model} ({car.year})
+                                        {makes.find(c=>c.id==car.make)?.name || car.make} {car.model} ({car.year})
                                     </Link>
 
                                     <div style={{

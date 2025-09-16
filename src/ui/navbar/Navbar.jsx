@@ -104,7 +104,7 @@ export default function Navbar() {
                         <Link to="/login" style={styles.loginButton}>Login</Link>
                         <Link to="/register" style={{
                             ...styles.loginButton,
-                            backgroundColor: "#10b981" // green for register
+                            backgroundColor: "#10b981"
                         }}>
                             Register
                         </Link>
@@ -124,7 +124,7 @@ const styles = {
         backgroundColor: "#ECECE7",
         top: 0,
         zIndex: 1000,
-        fontFamily: "'Inter', sans-serif", // поелегантен фонт
+        fontFamily: "'Inter', sans-serif",
     },
     leftSection: {
         display: "flex",
@@ -144,14 +144,14 @@ const styles = {
         gap: "3rem",
     },
     link: {
-        color: "#1F2937", // темно сива за поелегантен изглед
+        color: "#1F2937",
         textDecoration: "none",
         fontWeight: 500,
         fontSize: "17px",
         transition: "color 0.3s, transform 0.2s",
     },
     linkHover: {
-        color: "#b8b8be", // лилаво при hover
+        color: "#b8b8be",
     },
     profileWrapper: {
         position: "relative",

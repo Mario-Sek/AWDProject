@@ -3,10 +3,14 @@ import useThreads from "../../hooks/useThreads";
 import useUsers from "../../hooks/useUsers";
 import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../config/firebase";
+import {Link} from "react-router-dom";
 
 const initialFormData = {
     title: "",
     description: "",
+    preview:"",
     image: null,
     upvotes: 0,
     downvotes: 0,
@@ -41,14 +45,32 @@ const TestThreads = () => {
         setFormData((prev) => ({...prev, [name]: value}));
     };
 
-    const handleSubmit = () => {
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setFormData({...formData, image: file, preview: previewUrl})
+        }
+    }
+
+    const handleSubmit = async () => {
         if (!currentUser) {
             alert("You must be logged in to post threads.");
             return;
         }
+
+        let imageURL = ""
+
+        if (formData.image) {
+            const storageRef = ref(storage, `threads/${formData.image.name}`);
+            await uploadBytes(storageRef, formData.image);
+            imageURL = await getDownloadURL(storageRef);
+        }
+
         if (!formData.title.trim() || !formData.description.trim()) return;
-        onAdd({
+        await onAdd({
             ...formData,
+            image: imageURL,
             createdAt: new Date(),
             userId: currentUser,
             upvotes: 0,
@@ -409,15 +431,17 @@ const TestThreads = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    const blobUrl = URL.createObjectURL(file);
-                                    setFormData((prev) => ({...prev, image: blobUrl}));
-                                }
-                            }}
+                            onChange={handleImageChange}
                             style={styles.input}
                         />
+                        {/* IMAGE PREVIEW */}
+                        {formData.preview && (
+                            <img
+                                src={formData.preview}
+                                alt="Preview"
+                                style={{...styles.threadImage, marginTop: "1rem"}}
+                            />
+                        )}
                         <div style={{display: "flex", gap: "1rem", justifyContent: "flex-end"}}>
                             <button
                                 style={styles.primaryButton}
@@ -466,10 +490,14 @@ const TestThreads = () => {
                                                     {/* FIXED: Using uniformButton base with exact same dimensions as vote buttons */}
                                                     <button
                                                         style={{...styles.uniformButton, ...styles.editButton}}
-                                                        onClick={(e) => {
+                                                        /*onClick={(e) => {
                                                             e.stopPropagation();
                                                             startEditing(thread);
+                                                        }*/
+                                                        onClick={()=>{
+                                                            navigate(`/threads/${thread.id}`)
                                                         }}
+
                                                     >
                                                         Edit
                                                     </button>
@@ -543,6 +571,7 @@ const TestThreads = () => {
                                             }}
                                             style={styles.input}
                                         />
+
                                     </div>
                                 ) : (
                                     <>
@@ -555,7 +584,7 @@ const TestThreads = () => {
 
                                 <div style={styles.metadata}>
                                     Posted by <span style={styles.userName}>
-                                        {threadUser?.username || threadUser?.email || "Unknown User"}
+                                    <Link to={`/users/${threadUser}`}>{threadUser?.username || threadUser?.email || "Unknown User"}</Link>
                                     </span> • {thread.createdAt.toDate ? thread.createdAt.toDate().toLocaleString() : new Date(thread.createdAt).toLocaleString()}
                                 </div>
 

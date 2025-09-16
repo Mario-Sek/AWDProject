@@ -1,10 +1,19 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import useThreads from "../../hooks/useThreads";
 import useUsers from "../../hooks/useUsers";
 import { useAuth } from "../../hooks/useAuth";
 import { getAuth } from "firebase/auth";
 import TestComments from "./TestComments";
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../config/firebase";
+
+const initialState = {
+    title: "",
+    description: "",
+    image: "",
+    preview:""
+}
 
 const ThreadDetails = () => {
     const { id } = useParams();
@@ -17,7 +26,7 @@ const ThreadDetails = () => {
     const currentUser = auth.currentUser?.uid;
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editFormData, setEditFormData] = useState({ title: "", description: "", image: "" });
+    const [editFormData, setEditFormData] = useState(initialState);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const styles = {
@@ -260,8 +269,17 @@ const ThreadDetails = () => {
             title: thread.title,
             description: thread.description,
             image: thread.image || "",
+            preview: thread.image || ""
         });
     };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const previewUrl = URL.createObjectURL(file)
+            setEditFormData({...editFormData, image: file, preview: previewUrl})
+        }
+    }
 
     const cancelEditing = () => {
         setIsEditing(false);
@@ -284,7 +302,34 @@ const ThreadDetails = () => {
         navigate("/threads");
     };
 
-    // 🔥 Add DB-backed like/dislike function
+    const handleSubmit = async () => {
+        if (!currentUser) {
+            alert("You must be logged in to post threads.");
+            return;
+        }
+
+        let imageURL = thread.image || "";
+
+        if (editFormData.image && editFormData.image instanceof File) {
+            const storageRef = ref(storage, `threads/${editFormData.image.name}`);
+            await uploadBytes(storageRef, editFormData.image);
+            imageURL = await getDownloadURL(storageRef);
+        }
+
+        if (!editFormData.title.trim() || !editFormData.description.trim()) return;
+
+        await onUpdate(thread.id, {
+            ...thread,
+            title: editFormData.title,
+            description: editFormData.description,
+            image: imageURL,
+        });
+
+        setEditFormData(initialState);
+        setIsEditing(false);
+    };
+
+    // Add DB-backed like/dislike function
     const handleVote = (thread, type) => {
         if (!currentUser) return;
         const currentVote = thread.votedBy?.[currentUser] || null;
@@ -337,16 +382,16 @@ const ThreadDetails = () => {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        const blobUrl = URL.createObjectURL(file);
-                                        setEditFormData((prev) => ({ ...prev, image: blobUrl }));
-                                    }
-                                }}
+                                onChange={handleImageChange}
                                 style={{ padding: "0.4rem" }}
                             />
-
+                            {editFormData.preview && (
+                                <img
+                                    src={editFormData.preview}
+                                    alt="Preview"
+                                    style={{ ...styles.image, marginTop: "0.5rem" }}
+                                />
+                            )}
                             <div style={styles.editButtons}>
                                 <button
                                     style={{ ...styles.actionButton, ...styles.secondaryButton }}
@@ -356,7 +401,7 @@ const ThreadDetails = () => {
                                 </button>
                                 <button
                                     style={{ ...styles.actionButton, ...styles.greenButton }}
-                                    onClick={saveEdit}
+                                    onClick={handleSubmit}
                                 >
                                     Save
                                 </button>
@@ -422,9 +467,9 @@ const ThreadDetails = () => {
                             </div>
 
                             <div style={styles.metadata}>
-                                Posted by <span style={styles.userName}>
+                                Posted by <Link to={`/users/${threadUser?.uid}`} style={styles.userName}>
                                     {threadUser?.username || threadUser?.email || "Unknown User"}
-                                </span> • {thread.createdAt.toDate ? thread.createdAt.toDate().toLocaleString() : new Date(thread.createdAt).toLocaleString()}
+                                </Link> • {thread.createdAt.toDate ? thread.createdAt.toDate().toLocaleString() : new Date(thread.createdAt).toLocaleString()}
                             </div>
                         </>
                     )}
