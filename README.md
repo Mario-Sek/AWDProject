@@ -1,12 +1,10 @@
 # GearTalk
----
 
 **Short description**
 GearTalk is a web applicaiton where users can participate in car-related discussions, compare vehicles or track logs for their own personal vehicles.
 
 
 ## Features
----
 
 - User profile creation and management  
 - Create, edit, and engage with threads, comments, and replies  
@@ -22,7 +20,6 @@ GearTalk is a web applicaiton where users can participate in car-related discuss
 - HTML / CSS
 
 ## Local Setup
----
 
 1. Clone the repo
    `git clone https://github.com/Mario-Sek/AWDProject.git
