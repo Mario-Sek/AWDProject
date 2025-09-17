@@ -323,7 +323,7 @@ const TestReplies = ({
                         <img src={replyFormData.root.image} alt="Preview" style={styles.replyImage} />
                     )}
 
-                    <input
+                    {/*<input
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
@@ -334,7 +334,7 @@ const TestReplies = ({
                             }
                         }}
                         style={styles.input}
-                    />
+                    />*/}
 
                     <div style={styles.formButtons}>
                         <button
@@ -381,7 +381,7 @@ const TestReplies = ({
                                         })}
                                         style={styles.textarea}
                                     />
-                                    <input
+                                    {/*<input
                                         type="file"
                                         accept="image/*"
                                         onChange={(e) => {
@@ -392,7 +392,7 @@ const TestReplies = ({
                                             }
                                         }}
                                         style={styles.input}
-                                    />
+                                    />*/}
                                     <div style={styles.formButtons}>
                                         <button
                                             style={{...styles.smallButton, ...styles.secondaryButton}}
